@@ -1,10 +1,21 @@
 import requests
 from bs4 import BeautifulSoup
 from rest_framework.views import APIView
-from ..helpers.helpers import return_response, get_soup_from_url, compare_fractions
+from ..helpers.helpers import return_response, get_soup_from_url, compare_fractions, get_fighters_fighting_style, get_fighters_record_again_each_opponents_fight_style, find_max
 from rest_framework import status
 from rest_framework.decorators import api_view
 import pandas as pd
+import openai
+import os
+import time
+from dotenv import load_dotenv
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import re
+
+load_dotenv()
 
 class EventsList(APIView):
   def get(self, request):
@@ -57,6 +68,7 @@ class EventsList(APIView):
     fighter_2 = fighters[1]
     
     winner_dict = {fighter_1: 0, fighter_2: 0}
+    print(column_names, 'column_names1')
 
     # Loop through the columns and extract the data for each fighter
     for col in column_names:
@@ -198,4 +210,92 @@ class EventsList(APIView):
       result['winner'] = 'Draw'
     return return_response(result, 'Success', status.HTTP_200_OK)
           
+  @api_view(['GET'])
+  def get_in_depth_stats(request):
+    fighter_1 = request.data.get('fighter_1')
+    fighter_2 = request.data.get('fighter_2')
+    fighter_1_style = get_fighters_fighting_style(fighter_1)
+    fighter_2_style = get_fighters_fighting_style(fighter_2)
+    
+    fighter_1_names_list = fighter_1.split()
+    fighter_1_stats_search_url = f'http://ufcstats.com/statistics/fighters/search?query={fighter_1_names_list[0]}'
 
+    fighter_1_search_soup = get_soup_from_url(fighter_1_stats_search_url)
+    fighter_1_a_tag = fighter_1_search_soup.find('a', text=re.compile(fighter_1_names_list[1].lower(), re.I))
+
+    fighter_1_stats_url_href =  fighter_1_a_tag.get('href')
+    
+    fighter_2_names_list = fighter_2.split()
+    fighter_2_stats_search_url = f'http://ufcstats.com/statistics/fighters/search?query={fighter_2_names_list[0]}'
+    fighter_2_search_soup = get_soup_from_url(fighter_2_stats_search_url)
+
+    # fighter_2_a_tag = fighter_2_search_soup.find('a', text=fighter_2_names_list[1].title())
+    fighter_2_a_tag = fighter_2_search_soup.find('a', text=re.compile(fighter_2_names_list[1].lower(), re.I))
+
+    fighter_2_stats_url_href =  fighter_2_a_tag.get('href')
+    
+    fighter_1_data = get_fighters_record_again_each_opponents_fight_style(fighter_1,fighter_1_stats_url_href )
+    fighter_2_data = get_fighters_record_again_each_opponents_fight_style(fighter_2,fighter_2_stats_url_href )
+    
+    all_fighter_1_opponents = fighter_1_data['opponents']
+    all_fighter_1_opponents= [item.lower() for item in all_fighter_1_opponents]
+    all_fighter_2_opponents = fighter_2_data['opponents']
+    all_fighter_2_opponents = [item.lower() for item in all_fighter_2_opponents]
+    
+    all_fighter_1_results_against_all_opponents = fighter_1_data['result_against_opponents']
+    all_fighter_2_results_against_all_opponents = fighter_2_data['result_against_opponents']
+    
+    fighter_1_record_agains_each_opponent_style = fighter_1_data['record']
+    fighter_2_record_agains_each_opponent_style = fighter_2_data['record']
+    
+    fighter_1_record_agains_fighter_2_srtle = fighter_1_record_agains_each_opponent_style[fighter_2_style] if fighter_2_style in fighter_1_record_agains_each_opponent_style else None
+    
+    fighter_2_record_agains_fighter_1_srtle = fighter_2_record_agains_each_opponent_style[fighter_1_style] if fighter_1_style in fighter_2_record_agains_each_opponent_style else None
+    
+    have_fighters_fought_before: bool = fighter_1 in all_fighter_2_opponents or fighter_2 in all_fighter_1_opponents
+    
+    fighter_with_more_wins_over_other = None # return value
+    fighter_with_better_record_against_opponent_style = None # return value
+    fighter_1_record_against_fighter_2 = None
+    fighter_2_record_against_fighter_1 = None
+    amount_of_fighter_1_wins_agains_fighter_2 = None
+    amount_of_fighter_1_loss_agains_fighter_2 = None
+    amount_of_fighter_1_draw_agains_fighter_2 = None
+    amount_of_fighter_1_nc_agains_fighter_2 = None
+    amount_of_fighter_2_wins_agains_fighter_1 = None
+    amount_of_fighter_2_loss_agains_fighter_1 = None
+    amount_of_fighter_2_draw_agains_fighter_1 = None
+    amount_of_fighter_2_nc_agains_fighter_1 = None
+    
+    if have_fighters_fought_before == True:
+      fighter_1_result_previous_results_against_fighter_2 = all_fighter_1_results_against_all_opponents[fighter_2]
+      fighter_2_result_previous_results_against_fighter_1 = all_fighter_2_results_against_all_opponents[fighter_1]
+      amount_of_fighter_1_wins_agains_fighter_2 = fighter_1_result_previous_results_against_fighter_2.count('win')
+      amount_of_fighter_1_loss_agains_fighter_2 = fighter_1_result_previous_results_against_fighter_2.count('loss')
+      amount_of_fighter_1_draw_agains_fighter_2 = fighter_1_result_previous_results_against_fighter_2.count('draw')
+      amount_of_fighter_1_nc_agains_fighter_2 = fighter_1_result_previous_results_against_fighter_2.count('nc')
+      fighter_1_record_against_fighter_2 = f"{amount_of_fighter_1_wins_agains_fighter_2}-{amount_of_fighter_1_loss_agains_fighter_2}-{amount_of_fighter_1_draw_agains_fighter_2} -{amount_of_fighter_1_nc_agains_fighter_2}nc"
+      amount_of_fighter_2_wins_agains_fighter_1 = fighter_2_result_previous_results_against_fighter_1.count('win')
+      amount_of_fighter_2_loss_agains_fighter_1 = fighter_2_result_previous_results_against_fighter_1.count('loss')
+      amount_of_fighter_2_draw_agains_fighter_1 = fighter_2_result_previous_results_against_fighter_1.count('draw')
+      amount_of_fighter_2_nc_agains_fighter_1 = fighter_2_result_previous_results_against_fighter_1.count('nc')
+      fighter_2_record_against_fighter_1 = f"{amount_of_fighter_2_wins_agains_fighter_1}-{amount_of_fighter_2_loss_agains_fighter_1}-{amount_of_fighter_2_draw_agains_fighter_1} -{amount_of_fighter_2_nc_agains_fighter_1}nc"
+
+      if amount_of_fighter_1_wins_agains_fighter_2 > amount_of_fighter_2_wins_agains_fighter_1:
+        fighter_with_more_wins_over_other = fighter_1
+      elif amount_of_fighter_2_wins_agains_fighter_1 > amount_of_fighter_1_wins_agains_fighter_2:
+        fighter_with_more_wins_over_other = fighter_2
+    # Do something with return value if have fought before and equal
+    
+    amount_of_times_fighter_1_has_fought_fighter_2_style = len(fighter_1_record_agains_fighter_2_srtle) if fighter_1_record_agains_fighter_2_srtle != None else None
+    amount_of_wins_fighter_1_has_against_fighter_2_style = fighter_1_record_agains_fighter_2_srtle.count('win') if isinstance(fighter_1_record_agains_fighter_2_srtle, list) else None
+    percentage_of_wins_fighter_1_has_against_fighter_2_style = round(amount_of_wins_fighter_1_has_against_fighter_2_style / amount_of_times_fighter_1_has_fought_fighter_2_style, 2) if amount_of_wins_fighter_1_has_against_fighter_2_style != None else None
+    
+    amount_of_times_fighter_2_has_fought_fighter_1_style = len(fighter_2_record_agains_fighter_1_srtle) if fighter_2_record_agains_fighter_1_srtle != None else None
+    amount_of_wins_fighter_2_has_against_fighter_1_style = fighter_2_record_agains_fighter_1_srtle.count('win') if isinstance(fighter_2_record_agains_fighter_1_srtle, list) else None
+    percentage_of_wins_fighter_2_has_against_fighter_1_style = round(amount_of_wins_fighter_2_has_against_fighter_1_style / amount_of_times_fighter_2_has_fought_fighter_1_style, 2) if amount_of_wins_fighter_2_has_against_fighter_1_style != None else None
+
+    fighter_with_better_record_against_opponent_style = find_max((fighter_1, percentage_of_wins_fighter_1_has_against_fighter_2_style), (fighter_2, percentage_of_wins_fighter_2_has_against_fighter_1_style)) if percentage_of_wins_fighter_1_has_against_fighter_2_style != None else None  
+    
+    res = {'fighter_with_better_record_against_opponent_style': fighter_with_better_record_against_opponent_style, 'fighter_with_more_wins_over_other': fighter_with_more_wins_over_other, 'percentage_of_wins_fighter_1_has_against_fighter_2_style': percentage_of_wins_fighter_1_has_against_fighter_2_style, 'percentage_of_wins_fighter_2_has_against_fighter_1_style': percentage_of_wins_fighter_2_has_against_fighter_1_style, 'fighter_1_result_previous_results_against_fighter_2': fighter_1_result_previous_results_against_fighter_2, 'fighter_1_record_against_fighter_2': fighter_1_record_against_fighter_2, 'fighter_2_record_against_fighter_1': fighter_2_record_against_fighter_1}
+    return return_response(res, 'Success', status.HTTP_200_OK)
