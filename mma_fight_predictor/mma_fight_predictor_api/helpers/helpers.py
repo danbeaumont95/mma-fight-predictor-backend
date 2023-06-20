@@ -71,7 +71,7 @@ def get_fighters_fighting_style(name):
   else:
     last_name = None
   user_in_db = Fighter.objects.filter(first_name=first_name, last_name=last_name).exists()
-  print(user_in_db, 'user_in_db1')
+
   if user_in_db == True:
     fighter = Fighter.objects.filter(first_name=first_name, last_name=last_name).first()
     style = fighter.style
@@ -82,12 +82,39 @@ def get_fighters_fighting_style(name):
   response = requests.get(url, headers=headers)
   soup = BeautifulSoup(response.content, 'html.parser')
   fighting_style_div = soup.find('div', text='Fighting style')
-  # style = fighting_style_div.find_next_sibling('div').get_text()
   if fighting_style_div == None:
     return None
   style = fighting_style_div.find_next_sibling('div').get_text()
   return style
 
+def get_fighters_fighting_stance(name):
+    name_parts = name.split()
+    first_name = name_parts[0]
+    if len(name_parts) > 1:
+      if len(name_parts) > 2:
+        last_name = " ".join(name_parts[1:])
+      else:
+        last_name = name_parts[1]
+    else:
+      last_name = None
+    user_in_db = Fighter.objects.filter(first_name=first_name, last_name=last_name).exists()
+    if user_in_db == True:
+      fighter = Fighter.objects.filter(first_name=first_name, last_name=last_name).first()
+      stance = fighter.stance
+      return stance
+    else:
+      fighter_1_stats_search_url = f'http://ufcstats.com/statistics/fighters/search?query={name_parts[0]}&page=all'
+
+      fighter_1_search_soup = get_soup_from_url(fighter_1_stats_search_url)
+      fighter_1_a_tag = fighter_1_search_soup.find('a', text=re.compile(name_parts[1].lower(), re.I))
+      fighter_1_stats_url_href =  fighter_1_a_tag.get('href')
+      fighter_1_search_soup = get_soup_from_url(fighter_1_stats_url_href)
+      ulist = fighter_1_search_soup.find('ul', class_='b-list__box-list')
+      item = ulist.find(lambda tag: tag.name == 'li' and 'STANCE:' in tag.get_text())
+      word = item.get_text(strip=True).split(':', 1)[1].strip()
+
+      return word
+    
 def get_fighters_record_again_each_opponents_fight_style(fighter_name,url):
   fighter_1_fights_table_soup = get_soup_from_url(url)
   fighter_1_table = fighter_1_fights_table_soup.find('table')
@@ -101,10 +128,7 @@ def get_fighters_record_again_each_opponents_fight_style(fighter_name,url):
   opponents = []
   result_against_opponents = {}
   for row, column in fighter_1_df.iterrows():
-    # opponent = column['Fighter'].replace(fighter_name.title(), "").strip()
     opponent = column['Fighter'].lower().replace(fighter_name.lower(), "").strip() # this has broken below get_fighters_fighting_style as its now lower, was title before
-
-    print(opponent, 'opponentopponentopponent')
   
     opponents.append(opponent)
     if opponent not in result_against_opponents:
@@ -119,20 +143,20 @@ def get_fighters_record_again_each_opponents_fight_style(fighter_name,url):
     td = column['Td']
     sub = column['Sub']
     event = column['Event']
+    opponent_fighting_stance = get_fighters_fighting_stance(opponent)
     try:
-      print(opponent, 'opponent11')
       opponent_fighting_style = get_fighters_fighting_style(opponent)
-      print(opponent_fighting_style, 'opponent_fighting_style1')
-      opponents_fighting_style.append({'opponent': opponent, 'style': opponent_fighting_style, 'result': result})
+      opponents_fighting_style.append({'opponent': opponent, 'style': opponent_fighting_style, 'result': result, 'stance': opponent_fighting_stance})
     except:
-      opponents_fighting_style.append({'opponent': opponent, 'style': 'unable to find', 'result': result})
-  
-  fighter_1_opponent_styles = {d['style'] for d in opponents_fighting_style if 'style' in d}
 
+      opponents_fighting_style.append({'opponent': opponent, 'style': 'unable to find', 'result': result, 'stance': opponent_fighting_stance})
+    
+  fighter_1_opponent_styles = {d['style'] for d in opponents_fighting_style if 'style' in d}
+  fighter_1_opponent_stance = {d['stance'] for d in opponents_fighting_style if 'stance' in d}
 
   fighter_1_record_agains_each_opponent_style = {style: [d['result'] for d in opponents_fighting_style if d.get('style') == style] for style in fighter_1_opponent_styles}
-  print(result_against_opponents, 'result_against_opponent11111')
-  return {'record': fighter_1_record_agains_each_opponent_style, 'opponents': opponents, 'result_against_opponents': result_against_opponents}
+  fighter_1_record_agains_each_opponent_stance = {stance: [d['result'] for d in opponents_fighting_style if d.get('stance') == stance] for stance in fighter_1_opponent_stance}
+  return {'record': fighter_1_record_agains_each_opponent_style, 'opponents': opponents, 'result_against_opponents': result_against_opponents, 'fighter_1_record_agains_each_opponent_stance': fighter_1_record_agains_each_opponent_stance}
 
 def read_fighters_file(file):
 
@@ -232,7 +256,7 @@ def read_fighters_file(file):
     missing_required_columns = []
 
     too_many_column_errors = []
-    print(columns, 'columns123')
+
     if 'fighter_name' not in columns:
         missing_required_columns.append('fighter_name')
 
@@ -287,37 +311,26 @@ def read_fighters_file(file):
             td_def = row_data.get(column_dict['td_def'])
             sub_avg = row_data.get(column_dict['sub_avg'])
             
-            # print(fighter_name.split(), 'fighter_name.split()123')
-            # first_name = fighter_name.split()[0]
-            # last_name = fighter_name.split()[1] if len(fighter_name.split()) > 1 else None
             name_parts = fighter_name.split()
             if len(name_parts) > 2:
                 first_name = name_parts[0]
                 last_name = " ".join(name_parts[1:]) if len(fighter_name.split()) > 1 else None
             else:
-                # first_name, last_name = name_parts
                 first_name = name_parts[0]
                 last_name = name_parts[1] if len(fighter_name.split()) > 1 else None
-
-            # print('name', f'{first_name} {last_name}')
-
 
             fighter_already_exists = Fighter.objects.filter(
                 first_name=first_name, last_name=last_name).count()
 
             if fighter_already_exists == 1:
                 already_existing_users[row_id] = fighter_name
-
-            # print(fighter_already_exists, 'fighter_already_exists')
             else:
-              # Fighter.objects.create(first_name=first_name, last_name=last_name)
               fighters_style = get_fighters_fighting_style(fighter_name)
 
               Fighter.objects.create(first_name=first_name, last_name=last_name, height=height, weight=weight, reach=reach, stance=stance, dob=dob, slpm=slpm, str_acc=str_acc, sapm=sapm, str_def=str_def, td_avg=td_avg, td_acc=td_acc, td_def=td_def, sub_avg=sub_avg, style=fighters_style)
 
             new_users[fighter_name] = [
                 fighter_name, 
-                # first_name, last_name, manager_email
                 ]
         except Exception as e:
             print(e, 'error mapping row values')
@@ -332,7 +345,13 @@ def read_fighters_file(file):
 
 
 def find_max(fighter_1_record, fighter_2_record):
-  if fighter_1_record[1] > fighter_2_record[1]:
+  if fighter_1_record[1] == None and fighter_2_record[1] != None and fighter_2_record[1] > 0:
+    return fighter_2_record[0]
+  if fighter_2_record[1] == None and fighter_1_record[1] != None and fighter_1_record[1] > 0:
+    return fighter_1_record[0]
+  if fighter_1_record[1] == None or fighter_2_record[1] == None:
+    return None
+  if  fighter_1_record[1] > fighter_2_record[1]:
     return fighter_1_record[0]
   elif fighter_2_record[1] > fighter_1_record[1]:
     return fighter_2_record[0]
@@ -427,21 +446,15 @@ def read_fight_file(file):
 
   column_dict = dict()
   for index, value in enumerate(columns):
-
       stripped = value.replace('"', '')
-      print(stripped, 'stripped')
       new_val = stripped.rstrip(";").split(",")
-      # new_val = stripped.rstrip("\r").split(";")
       val = new_val[0]
-
       column_dict[convert_snake_to_camel(val)] = val
 
   missing_required_columns = []
 
   too_many_column_errors = []
-  print(columns, 'columns111')
   columns = [x.lower() for x in columns]
-  print(columns, 'columns222')
   if 'fighter_name' not in columns:
       missing_required_columns.append('fighter_name')
 
@@ -472,18 +485,14 @@ def read_fight_file(file):
                               'follower_email': str, 'manager_email': str}, na_filter=False)
   iteration = iteration.rename(columns=lambda x: x.lower())
   iteration = iteration.rename(columns={'r_sig_str.': 'r_sig_str', 'b_sig_str.': 'b_sig_str', 'r_total_str.': 'r_total_str', 'b_total_str.': 'b_total_str'})
-
-
   data_to_iterate = iteration
 
   empty_users = 0
-  print(column_dict, 'column_dict123')
   for column, row_data in data_to_iterate.iterrows():
 
       try:
 
           row_id = row_id + 1
-          print(row_data, 'row_data1')
 
           r_fighter = row_data['r_fighter']
           r_fighter = r_fighter.lower()
@@ -589,51 +598,6 @@ def read_fight_file(file):
             b_fighter_last_name = None
           try:
             
-
-            
-            # Fight.objects.create(
-            #   red_fighter=r_fighter,
-            #   blue_fighter=b_fighter,
-            #   red_kd=int(r_kd),
-            #   blue_kd=int(b_kd),
-            #   red_sig_str=r_sig_str,
-            #   blue_sig_str=b_sig_str,
-            #   red_sig_str_pct=int(r_sig_str_pct.replace('%', '')),
-            #   blue_sig_str_pct=int(b_sig_str_pct.replace('%', '')),
-            #   red_total_str=r_total_str,
-            #   blue_total_str=b_total_str,
-            #   red_td=r_td,
-            #   blue_td=b_td,
-            #   red_td_pct=int(r_td_pct.replace('%', '')) if r_td_pct != '---' else None,
-            #   blue_td_pct=int(b_td_pct.replace('%', '')) if b_td_pct != '---' else None,
-            #   red_sub_att=int(r_sub_att),
-            #   blue_sub_att=int(b_sub_att),
-            #   red_rev=int(r_rev),
-            #   blue_rev=int(b_rev),
-            #   red_ctrl=r_ctrl,
-            #   blue_ctrl=b_ctrl,
-            #   red_head=r_head,
-            #   blue_head=b_head,
-            #   red_body=r_body,
-            #   blue_body=b_body,
-            #   red_leg=r_leg,
-            #   blue_leg=b_leg,
-            #   red_distance=r_distance,
-            #   blue_distance=b_distance,
-            #   red_clinch=r_clinch,
-            #   blue_clinch=b_clinch,
-            #   red_ground=r_ground,
-            #   blue_ground=b_ground,
-            #   win_by=win_by,
-            #   last_round=int(last_round),
-            #   last_round_time=last_round_time,
-            #   format=format,
-            #   referee=referee,
-            #   date=date,
-            #   location=location,
-            #   fight_type=fight_type,
-            #   winner=winner
-            #   )
             fight = Fight.objects.create(
               r_kd=int(r_kd),
               b_kd=int(b_kd),
@@ -676,31 +640,6 @@ def read_fight_file(file):
               winner=winner
               )
             
-            # r_fighter_from_modal = Fighter.objects.get(first_name=r_fighter_first_name, last_name=r_fighter_last_name)
-            # print(r_fighter, 'r_fighter1')
-            # b_fighter_from_modal = Fighter.objects.get(first_name=b_fighter_first_name, last_name=b_fighter_last_name)
-            # print(b_fighter, 'b_fighter')
-            
-            # # fight.red_fighter.add(r_fighter_from_modal)
-            # # fight.blue_fighter.add(b_fighter_from_modal)
-            # fight.red_fighter.set([r_fighter_from_modal])
-            # fight.blue_fighter.set([b_fighter_from_modal])
-            # r_fighter_from_modal = Fighter.objects.get(first_name=r_fighter_first_name, last_name=r_fighter_last_name)
-            # print(r_fighter, 'r_fighter1')
-            # b_fighter_from_modal = Fighter.objects.get(first_name=b_fighter_first_name, last_name=b_fighter_last_name)
-            # print(b_fighter, 'b_fighter')
-
-            # fight.red_fighter.set([r_fighter_from_modal])
-            # fight.blue_fighter.set([b_fighter_from_modal])
-            # r_fighter_from_modal = Fighter.objects.get(first_name=r_fighter_first_name, last_name=r_fighter_last_name)
-            # b_fighter_from_modal = Fighter.objects.get(first_name=b_fighter_first_name, last_name=b_fighter_last_name)
-
-            # # assign fighters to Fight instance
-            # fight.red_fighter = r_fighter_from_modal
-            # fight.blue_fighter = b_fighter_from_modal
-
-            # # save Fight instance
-              # fight.save()
             red_fighter, created = Fighter.objects.get_or_create(first_name=r_fighter_first_name,
                                                         last_name=r_fighter_last_name)
             blue_fighter, created = Fighter.objects.get_or_create(first_name=b_fighter_first_name,
@@ -733,33 +672,6 @@ def extract_weight_class(fight_type):
     clean_fight_type = re.sub(r'(UFC|Title)', '', fight_type).strip()
     clean_fight_type = re.sub(r'\s+', ' ', clean_fight_type)
     return clean_fight_type
-
-# def get_fighters_with_weight_class_change():
-#     fighters = Fighter.objects.all()
-#     fights = Fight.objects.filter(red_fighter__in=fighters) | Fight.objects.filter(blue_fighter__in=fighters)
-#     fights = fights.order_by('date')
-    
-#     fighters_with_weight_class_change = []
-#     for index, fight in enumerate(fights):
-#         fighter = fight.red_fighter.first()
-#         next_fight = fights.filter(red_fighter=fighter, date__gt=fight.date).exclude(pk=fight.pk).first()
-#         print(fight.date, 'fight.date')
-#         if next_fight != None:
-#           print(next_fight.date, 'next_fight.date')
-#         # print(next_fight, 'next_fight1')
-
-#         if next_fight and extract_weight_class(next_fight.fight_type) != extract_weight_class(fight.fight_type):
-#             fighters_with_weight_class_change.append(fighter)
-
-#         fighter = fight.blue_fighter.first()
-#         next_fight = fights.filter(blue_fighter=fighter, date__gt=fight.date).exclude(pk=fight.pk).first()
-
-#         if next_fight and extract_weight_class(next_fight.fight_type) != extract_weight_class(fight.fight_type):
-#             fighters_with_weight_class_change.append(fighter)
-
-#     return fighters_with_weight_class_change
-
-
 
 def get_fighters_with_weight_class_change():
   fighters = Fighter.objects.all()

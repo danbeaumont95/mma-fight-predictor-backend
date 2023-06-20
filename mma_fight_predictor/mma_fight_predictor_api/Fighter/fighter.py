@@ -4,7 +4,7 @@ from rest_framework import status
 from .serializers import FighterSerializer
 from .models import Fighter
 from ..Fights.models import Fight
-from ..helpers.helpers import read_fighters_file, read_fight_file, get_fights_ending_in_ko,get_fighters_with_weight_class_change
+from ..helpers.helpers import read_fighters_file, read_fight_file, get_fights_ending_in_ko,get_fighters_with_weight_class_change, return_response
 from ..helpers.constants import WEIGHT_CLASSES
 from rest_framework.decorators import api_view
 import copy
@@ -14,6 +14,8 @@ import numpy as np
 from django.db.models import Q
 import datetime
 import re
+import requests
+from bs4 import BeautifulSoup
 
 class FighterList(APIView):
     def get(self, request):
@@ -91,7 +93,6 @@ class FighterList(APIView):
     @api_view(['GET'])
     def get_stats_from_db(request):
       fights_ending_in_ko = get_fights_ending_in_ko()
-      print(fights_ending_in_ko, 'fights_ending_in_ko')
       fights_that_ended_in_ko = Fight.objects.filter(win_by='KO/TKO')
       
       losers_that_lost_their_next_fight = 0
@@ -158,18 +159,48 @@ class FighterList(APIView):
               losers_that_lost_their_next_fight += 1
               if losers_next_fight.win_by == 'KO/TKO':
                 losers_that_lost_their_next_fight_by_ko += 1
-          print(losers_next_fight_winner, 'losers_next_fight_winner111')
-
-      print(fights_that_ended_in_ko.count(), 'fights_that_ended_in_koamount')
-      print(losers_that_lost_their_next_fight, 'losers_that_lost_their_next_fight123')
-      print(losers_that_lost_their_next_fight_by_ko, 'losers_that_lost_their_next_fight_by_ko123')
       
       percentage_of_fighters_that_lost_their_next_fight = losers_that_lost_their_next_fight / fights_that_ended_in_ko.count()
       percentage_of_fighters_that_lost_their_next_fight_by_ko = losers_that_lost_their_next_fight_by_ko / fights_that_ended_in_ko.count()
-      print(percentage_of_fighters_that_lost_their_next_fight, 'percentage_of_fighters_that_lost_their_next_fight1§')
-      print(percentage_of_fighters_that_lost_their_next_fight_by_ko, 'percentage_of_fighters_that_lost_their_next_fight_by_ko11')
             
-      
       fighters_with_weight_class_change_stats = get_fighters_with_weight_class_change()
-      print(fighters_with_weight_class_change_stats, 'fighters_with_weight_class_change_stats')  
-      return Response(fighters_with_weight_class_change_stats)
+ 
+      all_stats = {}
+      all_stats.update(fighters_with_weight_class_change_stats)
+      all_stats['fights_ending_in_ko'] = fights_ending_in_ko
+      all_stats['fights_that_ended_in_ko_count'] = fights_that_ended_in_ko.count()
+      all_stats['losers_that_lost_their_next_fight'] = losers_that_lost_their_next_fight
+      all_stats['losers_that_lost_their_next_fight_by_ko'] = losers_that_lost_their_next_fight_by_ko
+      all_stats['percentage_of_fighters_that_lost_their_next_fight'] = percentage_of_fighters_that_lost_their_next_fight
+      all_stats['percentage_of_fighters_that_lost_their_next_fight_by_ko'] = percentage_of_fighters_that_lost_their_next_fight_by_ko
+      return Response(all_stats)
+
+    @api_view(['GET'])
+    def get_fighter_image(request):
+      fighter_name = request.GET.get('fighter')
+      url = f'https://www.ufc.com/athlete/{fighter_name}'
+      response = requests.get(url)
+
+      if response.status_code == 200:
+          soup = BeautifulSoup(response.content, 'html.parser')
+          image_element = soup.select_one('.hero-profile__image')
+
+          if image_element:
+              image_src = image_element['src']
+              print(f"Fighter Image Source: {image_src}")
+              return return_response(image_src, 'Sucess', status.HTTP_200_OK)
+          else:
+              print("Fighter image not found.")
+              return return_response({}, 'Error', status.HTTP_200_OK)
+      else:
+          print("Failed to retrieve the UFC athlete page.")
+          return return_response({}, 'Error', status.HTTP_400_OK)
+
+    @api_view(['GET'])
+    def get_stats_for_match_up(request):
+      fighter_1_name = request.GET.get('fighter_1').lower()
+      fighter_2_name = request.GET.get('fighter_2').lower()
+      fighter_1_stats = Fighter.objects.filter(first_name=fighter_1_name.split()[0], last_name=fighter_1_name.split()[-1].lower()).values().first()
+      fighter_2_stats = Fighter.objects.filter(first_name=fighter_2_name.split()[0], last_name=fighter_2_name.split()[-1]).values().first()
+      return return_response({'fighter_1_stats': fighter_1_stats, 'fighter_2_stats': fighter_2_stats}, 'Success', status.HTTP_200_OK)
+      

@@ -1,18 +1,3 @@
 W/L,Fighter,Kd,Str,Td,Sub,Event,Method,Round,Time
-loss,Kamaru Usman  Leon Edwards,0  0,87  120,4  0,0  0,"UFC 286: Edwards vs. Usman 3  Mar. 18, 2023",M-DEC,5.0,5:00
-loss,Kamaru Usman  Leon Edwards,0  1,83  55,5  1,0  1,"UFC 278: Usman vs. Edwards  Aug. 20, 2022",KO/TKO  Kick,5.0,4:04
-win,Kamaru Usman  Colby Covington,2  0,123  107,1  0,0  0,"UFC 268: Usman vs. Covington 2  Nov. 06, 2021",U-DEC,5.0,5:00
-win,Kamaru Usman  Jorge Masvidal,1  0,21  31,2  0,0  0,"UFC 261: Usman vs. Masvidal 2  Apr. 24, 2021",KO/TKO  Punch,2.0,1:02
-win,Kamaru Usman  Gilbert Burns,2  0,83  45,0  0,0  0,"UFC 258: Usman vs. Burns  Feb. 13, 2021",KO/TKO  Punches,3.0,0:34
-win,Kamaru Usman  Jorge Masvidal,0  0,94  66,5  0,0  0,"UFC 251: Usman vs. Masvidal  Jul. 11, 2020",U-DEC,5.0,5:00
-win,Kamaru Usman  Colby Covington,2  0,175  143,0  0,0  0,"UFC 245: Usman vs. Covington  Dec. 14, 2019",KO/TKO  Punch,5.0,4:10
-win,Kamaru Usman  Tyron Woodley,0  0,141  34,2  0,0  0,"UFC 235: Jones vs. Smith  Mar. 02, 2019",U-DEC,5.0,5:00
-win,Kamaru Usman  Rafael Dos Anjos,0  0,130  62,12  0,0  2,"The Ultimate Fighter: Heavy Hitters Finale  Nov. 30, 2018",U-DEC,5.0,5:00
-win,Kamaru Usman  Demian Maia,1  0,66  27,0  0,0  0,"UFC Fight Night: Maia vs. Usman  May. 19, 2018",U-DEC,5.0,5:00
-win,Kamaru Usman  Emil Meek,0  0,50  30,8  0,0  2,"UFC Fight Night: Stephens vs. Choi  Jan. 14, 2018",U-DEC,3.0,5:00
-win,Kamaru Usman  Sergio Moraes,1  0,16  13,0  0,0  0,"UFC Fight Night: Rockhold vs. Branch  Sep. 16, 2017",KO/TKO  Punch,1.0,2:48
-win,Kamaru Usman  Sean Strickland,1  0,90  27,2  0,0  0,"UFC 210: Cormier vs. Johnson 2  Apr. 08, 2017",U-DEC,3.0,5:00
-win,Kamaru Usman  Warlley Alves,0  0,71  25,1  0,1  1,"UFC Fight Night: Bader vs. Nogueira  Nov. 19, 2016",U-DEC,3.0,5:00
-win,Kamaru Usman  Alexander Yakovlev,0  0,41  8,5  0,0  0,"UFC on FOX: Holm vs. Shevchenko  Jul. 23, 2016",U-DEC,3.0,5:00
-win,Kamaru Usman  Leon Edwards,0  0,48  26,6  0,0  0,"UFC on FOX: Dos Anjos vs. Cowboy 2  Dec. 19, 2015",U-DEC,3.0,5:00
-win,Kamaru Usman  Hayder Hassan,0  0,15  3,6  0,1  0,"The Ultimate Fighter: American Top Team vs. Blackzilians Finale  Jul. 12, 2015",SUB  Arm Triangle,2.0,1:19
+win,Jack Jenkins  Don Shainis,0  0,82  50,4  1,0  2,"UFC 284: Makhachev vs. Volkanovski  Feb. 11, 2023",U-DEC,3.0,5:00
+win,Jack Jenkins  Emiliano Linares,0  0,52  17,4  0,0  0,"DWCS 6.10  Sep. 27, 2022",KO/TKO  Punches,3.0,4:30
