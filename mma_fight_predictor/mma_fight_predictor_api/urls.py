@@ -1,8 +1,9 @@
 from .User.user import UserList
 from .Events.events import EventsList
 from .Fighter.fighter import FighterList
+from .Prediction.prediction import PredictionList
 from django.urls import re_path as url, path
-from .helpers.helpers import update_loser_field
+from .helpers.helpers import update_loser_field, get_fight_style_with_best_win_percentage_api_call
 
 urlpatterns = [
     # path('api', OrganisationApiView.as_view()),
@@ -21,4 +22,7 @@ urlpatterns = [
     path('fighter/update_loser_field', update_loser_field, name='update_loser_field'),
     path('fighter/get_fighter_image', FighterList.get_fighter_image, name='get_fighter_image'),
     path('fighter/get_stats_for_match_up', FighterList.get_stats_for_match_up, name='get_stats_for_match_up'),
+    path('get_fight_style_with_most_wins', get_fight_style_with_best_win_percentage_api_call, name='your-get_fight_style_with_most_wins-name'),
+    path('prediction/', PredictionList.as_view(), name='prediction'),
+
 ]

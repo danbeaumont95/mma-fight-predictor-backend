@@ -35,6 +35,8 @@ class EventsList(APIView):
     if 'link' in url:
       url = url['link']
     soup = get_soup_from_url(url)
+    
+    date_element = soup.find('li', class_='b-list__box-list-item').text.strip().split('\n')[-1].strip()    
     fights_html = soup.find_all('tr', {'class': 'js-fight-details-click'})
     
     fights_data = []
@@ -44,13 +46,14 @@ class EventsList(APIView):
       fighter_1_name = fighter_names[0].get_text(strip=True)
       fighter_2_name = fighter_names[1].get_text(strip=True)
       weight_class = item.find_all('td', {'class': 'b-fight-details__table-col l-page_align_left'})[1].get_text(strip=True)
-      fight_data = {'fighter_1': fighter_1_name, 'fighter_2': fighter_2_name, 'weight_class': weight_class, 'link': link}
+      fight_data = {'fighter_1': fighter_1_name, 'fighter_2': fighter_2_name, 'weight_class': weight_class, 'link': link, 'date': date_element}
       fights_data.append(fight_data)
     return return_response(fights_data, 'Success', status.HTTP_200_OK)
   
   @api_view(['POST'])
   def get_basic_fight_stats(request):
     url = request.data.get('fight_url')
+    fight_date = request.data.get('fight_date')
     soup = get_soup_from_url(url)
 
     table = soup.find('table')

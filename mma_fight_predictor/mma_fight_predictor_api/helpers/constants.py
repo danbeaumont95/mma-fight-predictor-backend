@@ -21,3 +21,18 @@ WEIGHT_CLASSES = {
     "UFC Heavyweight Title Bout": 11,
     "Super Heavyweight Bout": 12
 }
+
+PREDICTION_LOOKUP = {
+  'winner': 'overall_winner',
+  'count': 'count_winner',
+  'Submission Average/15 min.': 'submission_average_15_min_average_winner',
+  'Takedown Defense': 'takedown_defense_winner',
+  'Takedown Accuracy': 'takedown_accuracy_winner',
+  'Takedowns Average/15 min.': 'takedown_average_15_min_winner',
+  'Defense': 'defense_winner',
+  'Strikes Absorbed per Min. (SApM)': 'sapm_winner',
+  'Striking Accuracy': 'striking_accuracy_winner',
+  'Strikes Landed per Min. (SLpM)': 'slpm_winner',
+  'Reach': 'reach_winner',
+  'Wins/Losses/Draws': 'wld_winner'
+}

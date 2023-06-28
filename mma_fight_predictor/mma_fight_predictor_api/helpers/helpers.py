@@ -9,8 +9,8 @@ from io import StringIO
 import csv
 import re
 from pandas_schema.validation import CustomElementValidation
-from django.db.models import F
-from .constants import WEIGHT_CLASSES
+from django.db.models import F, Func
+from .constants import WEIGHT_CLASSES, PREDICTION_LOOKUP
 from pandas_schema import Column, Schema
 from ..Fighter.models import Fighter
 from ..User.models import User
@@ -20,8 +20,13 @@ from django.db.models import F, Q
 import json
 from rest_framework.decorators import api_view
 from rest_framework import status
-from django.db.models import F
+from django.db.models import F, Count
 import re
+from django.db.models import Count, Case, When, FloatField, OuterRef,Value, CharField
+from django.db.models.functions import Coalesce, Lower, Trim, Substr, Concat
+from django.db import connection
+from ..Prediction.models import Prediction
+from datetime import datetime
 
 def convert_snake_to_camel(string: str) -> str:
     string = re.sub(r'(?<=[a-z0-9])(?=[A-Z0-9])|[^a-zA-Z0-9]',
@@ -85,6 +90,13 @@ def get_fighters_fighting_style(name):
   if fighting_style_div == None:
     return None
   style = fighting_style_div.find_next_sibling('div').get_text()
+  best_fight_style = get_fight_style_with_best_win_percentage()
+  print(best_fight_style, 'best_fight_style1')
+  try:
+    Fighter.objects.filter(first_name=first_name, last_name=last_name).update(style=style)
+  except Exception as e:
+    print(e, 'error updating fighter style in database')
+      
   return style
 
 def get_fighters_fighting_stance(name):
@@ -401,11 +413,6 @@ def read_fight_file(file):
   index_of_manager = {}
 
   reader = csv.reader(copy_of_csv, delimiter=',')
-
-
-
-
-
 
   if isinstance(file, pd.DataFrame):
 
@@ -839,3 +846,118 @@ def update_loser_field(request):
         return Response('Loser field updated successfully.')
 
     return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+def get_fight_style_with_best_win_percentage(return_type=None):
+
+      query_with_winner_style = """
+      SELECT
+      f.*,
+      w.style AS winner_style
+  FROM
+      "mma_fight_predictor_api_fight" AS f
+      INNER JOIN "mma_fight_predictor_api_fighter" AS w ON LOWER(TRIM(f.winner)) = LOWER(TRIM(CONCAT(w.first_name, ' ', w.last_name)))
+
+      """
+      result4query = """
+      SELECT
+      w.style AS winner_style,
+      COUNT(*) AS winner_style_count
+  FROM
+      "mma_fight_predictor_api_fight" AS f
+      INNER JOIN "mma_fight_predictor_api_fighter" AS w ON LOWER(TRIM(f.winner)) = LOWER(TRIM(CONCAT(w.first_name, ' ', w.last_name)))
+  GROUP BY
+      w.style
+  """
+      with connection.cursor() as cursor:
+          cursor.execute(result4query)
+          most_common_winning_styles = cursor.fetchall()
+          ordered_data = sorted([x for x in most_common_winning_styles if x[0] is not None], key=lambda x: x[1], reverse=True)
+      return ordered_data
+        
+@api_view(['GET'])
+def get_fight_style_with_best_win_percentage_api_call(request):
+    data = get_fight_style_with_best_win_percentage()
+    return return_response(data, 'Success', status.HTTP_200_OK)
+
+def get_fighter(fighter_name):
+  fighter = Fighter.objects.filter(first_name=fighter_name.split()[0].lower(), last_name=fighter_name.split()[-1].lower()).first()
+  return fighter
+
+def add_fight_prediction_to_db(data, fight_date):
+  items_that_have_winners = ['Wins/Losses/Draws', 'Reach', 'Strikes Landed per Min. (SLpM)', 'Striking Accuracy', 'Strikes Absorbed per Min. (SApM)', 'Defense', 'Takedowns Average/15 min.', 'Takedown Accuracy', 'Takedown Defense', 'Submission Average/15 min.']
+  new_prediction = Prediction()
+  
+  for item in data:
+    for key, value in item.items():
+        if key == 'Tale of the tape':
+          blue_fighter_name = next(iter(value))
+          red_fighter_name = next(iter(value.keys() - {blue_fighter_name}))
+          blue_fighter = get_fighter(blue_fighter_name)
+          red_fighter = get_fighter(red_fighter_name)
+          new_prediction.blue_fighter =blue_fighter
+          new_prediction.red_fighter =red_fighter
+          date_object = datetime.strptime(fight_date, "%B %d, %Y")
+          formatted_date = date_object.strftime("%Y-%m-%d")
+          already_in_db = Prediction.objects.filter(red_fighter=red_fighter, blue_fighter=blue_fighter, fight_date=formatted_date).exists()
+
+          if already_in_db == False:
+            new_prediction.fight_date = formatted_date
+          else:
+            return 'Fight already in database'
+        if key in items_that_have_winners:
+          lookup_val = PREDICTION_LOOKUP[key] 
+          winner = Fighter.objects.filter(first_name=value['winner'].split()[0].lower(), last_name=value['winner'].split()[-1].lower()).first()
+          setattr(new_prediction, lookup_val, winner)
+          if key == 'Wins/Losses/Draws':
+            new_prediction.blue_fighter_wld_record = value[blue_fighter_name]
+            new_prediction.red_fighter_wld_record = value[red_fighter_name]
+        
+          if key == 'Reach':
+            new_prediction.blue_fighter_reach = value[blue_fighter_name]
+            new_prediction.red_fighter_reach = value[red_fighter_name]
+          if key == 'Strikes Landed per Min. (SLpM)':
+            new_prediction.blue_fighter_slpm = value[blue_fighter_name]
+            new_prediction.red_fighter_slpm = value[red_fighter_name]
+            
+          if key == 'Striking Accuracy':
+            new_prediction.blue_fighter_striking_accuracy = value[blue_fighter_name]
+            new_prediction.red_fighter_striking_accuracy = value[red_fighter_name]
+            
+          if key == 'Strikes Absorbed per Min. (SApM)':
+            new_prediction.blue_fighter_sapm= value[blue_fighter_name]
+            new_prediction.red_fighter_sapm= value[red_fighter_name]
+            
+            
+          if key == 'Defense':
+            new_prediction.blue_fighter_defense= value[blue_fighter_name]
+            new_prediction.red_fighter_defense= value[red_fighter_name]
+            
+          if key == 'Takedowns Average/15 min.':
+            new_prediction.blue_fighter_takedown_average_15_min= value[blue_fighter_name]
+            new_prediction.red_fighter_takedown_average_15_min= value[red_fighter_name]
+            
+          if key == 'Takedown Accuracy':
+            new_prediction.blue_fighter_takedown_accuracy= value[blue_fighter_name]
+            new_prediction.red_fighter_takedown_accuracy= value[red_fighter_name]
+            
+          if key == 'Takedown Defense':
+            new_prediction.blue_fighter_takedown_defense= value[blue_fighter_name]
+            new_prediction.red_fighter_takedown_defense= value[red_fighter_name]
+            
+          if key == 'Submission Average/15 min.':
+            new_prediction.blue_fighter_submission_average_15_min_average= value[blue_fighter_name]
+            new_prediction.red_fighter_submission_average_15_min_average= value[red_fighter_name]
+            
+            
+        if key == 'count':
+          fighter_name_with_highest_count = max(value, key=value.get)
+          fighter_with_highest_count = get_fighter(fighter_name_with_highest_count)
+          new_prediction.count_winner = fighter_with_highest_count
+          
+          new_prediction.blue_fighter_count = value[blue_fighter_name]
+          new_prediction.red_fighter_count = value[red_fighter_name]
+        
+          
+
+    new_prediction.save()
+    return 'New fight added'
