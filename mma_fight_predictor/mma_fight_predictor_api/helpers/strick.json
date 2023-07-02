@@ -1,0 +1,97 @@
+{
+  "data": {
+    "Tale of the tape": {
+      "Sean Strickland": "Tale of the tape",
+      "Abus Magomedov": "Tale of the tape"
+    },
+    "Wins/Losses/Draws": {
+      "Sean Strickland": "26-5-0",
+      "Abus Magomedov": "25-4-1",
+      "winner": "Abus Magomedov"
+    },
+    "Average Fight Time": {
+      "Sean Strickland": "14:26",
+      "Abus Magomedov": "0:19"
+    },
+    "Height": {
+      "Sean Strickland": "6' 1\"",
+      "Abus Magomedov": "6' 2\""
+    },
+    "Weight": {
+      "Sean Strickland": "185 lbs.",
+      "Abus Magomedov": "185 lbs."
+    },
+    "Reach": {
+      "Sean Strickland": "76\"",
+      "Abus Magomedov": "78\"",
+      "winner": "Abus Magomedov"
+    },
+    "Stance": {
+      "Sean Strickland": "Orthodox",
+      "Abus Magomedov": "Orthodox"
+    },
+    "DOB": {
+      "Sean Strickland": "Feb 27, 1991",
+      "Abus Magomedov": "Sep 02, 1990"
+    },
+    "Striking (Significant Strikes)": {
+      "Sean Strickland": "Striking (Significant Strikes)",
+      "Abus Magomedov": "Striking (Significant Strikes)"
+    },
+    "Strikes Landed per Min. (SLpM)": {
+      "Sean Strickland": "5.76",
+      "Abus Magomedov": "22.11",
+      "winner": "Sean Strickland"
+    },
+    "Striking Accuracy": {
+      "Sean Strickland": "41%",
+      "Abus Magomedov": "100%",
+      "winner": "Abus Magomedov"
+    },
+    "Strikes Absorbed per Min. (SApM)": {
+      "Sean Strickland": "4.25",
+      "Abus Magomedov": "0.00",
+      "winner": "Abus Magomedov"
+    },
+    "Defense": {
+      "Sean Strickland": "63%",
+      "Abus Magomedov": "100%",
+      "winner": "Abus Magomedov"
+    },
+    "Grappling": {
+      "Sean Strickland": "Grappling",
+      "Abus Magomedov": "Grappling"
+    },
+    "Takedowns Average/15 min.": {
+      "Sean Strickland": "1.04",
+      "Abus Magomedov": "0.00",
+      "winner": "Sean Strickland"
+    },
+    "Takedown Accuracy": {
+      "Sean Strickland": "64%",
+      "Abus Magomedov": "0%",
+      "winner": "Sean Strickland"
+    },
+    "Takedown Defense": {
+      "Sean Strickland": "85%",
+      "Abus Magomedov": "0%",
+      "winner": "Sean Strickland"
+    },
+    "Submission Average/15 min.": {
+      "Sean Strickland": "0.2",
+      "Abus Magomedov": "0.0",
+      "winner": "Sean Strickland"
+    },
+    "Most recent fights (Newest First)": {
+      "Sean Strickland": "Most recent fights (Newest First)",
+      "Abus Magomedov": "Most recent fights (Newest First)"
+    },
+    "count": {
+      "Sean Strickland": 5,
+      "Abus Magomedov": 5
+    },
+    "winner": "Draw"
+  },
+  "message": "Success",
+  "status": 200
+}

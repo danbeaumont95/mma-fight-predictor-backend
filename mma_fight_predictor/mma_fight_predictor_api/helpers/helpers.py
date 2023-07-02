@@ -879,21 +879,56 @@ def get_fight_style_with_best_win_percentage_api_call(request):
     data = get_fight_style_with_best_win_percentage()
     return return_response(data, 'Success', status.HTTP_200_OK)
 
+def get_last_name(fighter_name):
+  words_after_first = fighter_name.split()[1:]
+  lowercase_words = [word.lower() for word in words_after_first]
+  joined_string = ' '.join(lowercase_words)
+  return joined_string
+
+def create_new_fighter(fighter_name, fight_link):
+  print(fighter_name, fight_link)
+  new_fighter = Fighter()
+  new_fighter.first_name = fighter_name.split()[0].lower()
+  new_fighter.last_name = get_last_name(fighter_name)
+  new_fighter.save()
+  # Dan TO-DO get soup from fight_link and insert additional details to DB
+  # Sometimes the row is empty so need to account for that here and in other places
+  
 def get_fighter(fighter_name):
-  fighter = Fighter.objects.filter(first_name=fighter_name.split()[0].lower(), last_name=fighter_name.split()[-1].lower()).first()
+  last_name=get_last_name(fighter_name)
+  fighter = Fighter.objects.filter(first_name=fighter_name.split()[0].lower(), last_name=last_name).first()
   return fighter
 
-def add_fight_prediction_to_db(data, fight_date):
+def add_fight_prediction_to_db(data, fight_date, fight_link=None):
   items_that_have_winners = ['Wins/Losses/Draws', 'Reach', 'Strikes Landed per Min. (SLpM)', 'Striking Accuracy', 'Strikes Absorbed per Min. (SApM)', 'Defense', 'Takedowns Average/15 min.', 'Takedown Accuracy', 'Takedown Defense', 'Submission Average/15 min.']
   new_prediction = Prediction()
   
   for item in data:
+    print(item, 'item1')
     for key, value in item.items():
         if key == 'Tale of the tape':
           blue_fighter_name = next(iter(value))
+          print(blue_fighter_name, 'blue_fighter_name1')
           red_fighter_name = next(iter(value.keys() - {blue_fighter_name}))
+          print(red_fighter_name, 'red_fighter_name1')
           blue_fighter = get_fighter(blue_fighter_name)
+          if blue_fighter is None:
+            print('blue fighter doesnt exist')
+            if fight_link is not None:
+              print('creating new blue fighter')
+              # Dan TO-DO insert fighter into db here
+              create_new_fighter(blue_fighter_name, fight_link)
+              blue_fighter = get_fighter(blue_fighter_name)
+          print(blue_fighter, 'blue_fighter')
           red_fighter = get_fighter(red_fighter_name)
+          print(red_fighter, 'red_fighter')
+          if red_fighter is None:
+            print('red fighter doesnt exist')
+            if fight_link is not None:
+              print('creating new red fighter')
+              create_new_fighter(red_fighter_name, fight_link)
+              red_fighter = get_fighter(red_fighter_name)
+            # Dan TO-DO insert fighter into db here
           new_prediction.blue_fighter =blue_fighter
           new_prediction.red_fighter =red_fighter
           date_object = datetime.strptime(fight_date, "%B %d, %Y")
@@ -906,8 +941,11 @@ def add_fight_prediction_to_db(data, fight_date):
             return 'Fight already in database'
         if key in items_that_have_winners:
           lookup_val = PREDICTION_LOOKUP[key] 
-          winner = Fighter.objects.filter(first_name=value['winner'].split()[0].lower(), last_name=value['winner'].split()[-1].lower()).first()
-          setattr(new_prediction, lookup_val, winner)
+          print(key, 'key1')
+          print(value, 'value1')
+          if 'winner' in value:
+            winner = Fighter.objects.filter(first_name=value['winner'].split()[0].lower(), last_name=value['winner'].split()[-1].lower()).first()
+            setattr(new_prediction, lookup_val, winner)
           if key == 'Wins/Losses/Draws':
             new_prediction.blue_fighter_wld_record = value[blue_fighter_name]
             new_prediction.red_fighter_wld_record = value[red_fighter_name]
@@ -961,3 +999,179 @@ def add_fight_prediction_to_db(data, fight_date):
 
     new_prediction.save()
     return 'New fight added'
+
+
+def get_all_fights_in_event(url):
+    if 'link' in url:
+      url = url['link']
+    soup = get_soup_from_url(url)
+    
+    date_element = soup.find('li', class_='b-list__box-list-item').text.strip().split('\n')[-1].strip()    
+    fights_html = soup.find_all('tr', {'class': 'js-fight-details-click'})
+    
+    fights_data = []
+    for item in fights_html:
+      link = item.get("data-link")
+      fighter_names = item.find_all('td', {'class': 'b-fight-details__table-col l-page_align_left'})[0].find_all('a')
+      fighter_1_name = fighter_names[0].get_text(strip=True)
+      fighter_2_name = fighter_names[1].get_text(strip=True)
+      weight_class = item.find_all('td', {'class': 'b-fight-details__table-col l-page_align_left'})[1].get_text(strip=True)
+      fight_data = {'fighter_1': fighter_1_name, 'fighter_2': fighter_2_name, 'weight_class': weight_class, 'link': link, 'date': date_element}
+      fights_data.append(fight_data)
+    return fights_data
+
+def get_basic_fight_stats_from_event(url):
+  soup = get_soup_from_url(url)
+
+  table = soup.find('table')
+
+  dfs = pd.read_html(str(table))
+  df = dfs[0]
+  df = df.dropna()
+  first_column_name = df.columns[0]
+  renamed_df = df.rename(columns={first_column_name: 'Statistic'})
+
+  result = {}
+  
+  column_names = renamed_df.iloc[:, 0].tolist()
+  fighters = renamed_df.iloc[:, 1:].columns.tolist()
+  fighter_1 = fighters[0]
+  fighter_2 = fighters[1]
+  
+  winner_dict = {fighter_1: 0, fighter_2: 0}
+
+  for col in column_names:
+      col_data = renamed_df.loc[renamed_df['Statistic'] == col].iloc[:, 1:].T.reset_index()
+      col_data.columns = ['Fighter', col]
+
+      col_data.set_index('Fighter', inplace=True)
+      col_data.index.name = None
+
+      # Convert the column data to a dictionary
+      col_dict = col_data.to_dict()[col]
+      
+      # TO-DO change this to take into account this might not be correct if 10-2 fighter facing 1-0 as 1-0 would win this but has had way less fights===less experience
+      if col == 'Wins/Losses/Draws':
+        fighter_1_record = col_dict[fighter_1]
+        fighter_2_record = col_dict[fighter_2]
+        figter_1_wins, fighter_1_losses, fighter_1_draws = fighter_1_record.split("-")
+
+        figter_1_wins = int(figter_1_wins.split()[0])
+        fighter_1_losses = int(fighter_1_losses.split()[0])
+        fighter_1_draws = int(fighter_1_draws.split()[0])
+        
+        figter_2_wins, fighter_2_losses, fighter_2_draws = fighter_2_record.split("-")
+
+        figter_2_wins = int(figter_2_wins.split()[0])
+        fighter_2_losses = int(fighter_2_losses.split()[0])
+        fighter_2_draws = int(fighter_2_draws.split()[0])
+        
+        compared_wins_winner = compare_fractions((figter_1_wins, fighter_1_losses, fighter_1), (figter_2_wins, fighter_2_losses, fighter_2))
+        if compared_wins_winner != 'Equal':
+          col_dict['winner'] = compared_wins_winner
+          winner_dict[compared_wins_winner] +=1
+
+      if col == 'Reach':
+        if col_dict[fighter_1] > col_dict[fighter_2]:
+          col_dict['winner'] = fighter_1
+          winner_dict[fighter_1] +=1
+        elif col_dict[fighter_2] > col_dict[fighter_1]:
+          col_dict['winner'] = fighter_2
+          winner_dict[fighter_2] +=1
+        else:
+          print('both fighters have the same reach')
+      
+      if col == 'Strikes Landed per Min. (SLpM)':
+        if col_dict[fighter_1] > col_dict[fighter_2]:
+          col_dict['winner'] = fighter_1
+          winner_dict[fighter_1] +=1
+        elif col_dict[fighter_2] > col_dict[fighter_1]:
+          col_dict['winner'] = fighter_2
+          winner_dict[fighter_2] +=1
+        else:
+          print('both fighters have the same significant strikes lander per min')
+
+      if col == 'Striking Accuracy':
+        fighter_1_striking_accuracy_num = float(col_dict[fighter_1].strip("%"))
+        fighter_2_striking_accuracy_num = float(col_dict[fighter_2].strip("%"))
+        if fighter_1_striking_accuracy_num > fighter_2_striking_accuracy_num:
+          col_dict['winner'] = fighter_1
+          winner_dict[fighter_1] +=1
+        elif fighter_2_striking_accuracy_num > fighter_1_striking_accuracy_num:
+            col_dict['winner'] = fighter_2
+            winner_dict[fighter_2] +=1
+        else:
+          print('both fighters have the same striking accuracy')
+          
+      if col == 'Strikes Absorbed per Min. (SApM)':
+        if col_dict[fighter_1] > col_dict[fighter_2]:
+          col_dict['winner'] = fighter_2
+          winner_dict[fighter_2] +=1
+        elif col_dict[fighter_2] > col_dict[fighter_1]:
+          col_dict['winner'] = fighter_1
+          winner_dict[fighter_1] +=1
+        else:
+          print('both fighters have the same Strikes Absorbed per Min')
+      
+      if col == 'Defense':
+        fighter_1_striking_defence_num = float(col_dict[fighter_1].strip("%"))
+        fighter_2_striking_defence_num = float(col_dict[fighter_2].strip("%"))
+        if fighter_1_striking_defence_num > fighter_2_striking_defence_num:
+          col_dict['winner'] = fighter_1
+          winner_dict[fighter_1] +=1
+        elif fighter_2_striking_defence_num > fighter_1_striking_defence_num:
+            col_dict['winner'] = fighter_2
+            winner_dict[fighter_2] +=1
+        else:
+          print('both fighters have the same defence')
+      
+      if col == 'Takedowns Average/15 min.':
+        if col_dict[fighter_1] > col_dict[fighter_2]:
+          col_dict['winner'] = fighter_1
+          winner_dict[fighter_1] +=1
+        elif col_dict[fighter_2] > col_dict[fighter_1]:
+          col_dict['winner'] = fighter_2
+          winner_dict[fighter_2] +=1
+        else:
+          print('both fighters have the same takedowns average/15 min')
+      
+      if col == 'Takedown Accuracy':
+        if col_dict[fighter_1] > col_dict[fighter_2]:
+          col_dict['winner'] = fighter_1
+          winner_dict[fighter_1] +=1
+        elif col_dict[fighter_2] > col_dict[fighter_1]:
+          col_dict['winner'] = fighter_2
+          winner_dict[fighter_2] +=1
+        else:
+          print('both fighters have the same takedowns accuracy')
+      
+      if col == 'Takedown Defense':
+        if col_dict[fighter_1] > col_dict[fighter_2]:
+          col_dict['winner'] = fighter_1
+          winner_dict[fighter_1] +=1
+        elif col_dict[fighter_2] > col_dict[fighter_1]:
+          col_dict['winner'] = fighter_2
+          winner_dict[fighter_2] +=1
+        else:
+          print('both fighters have the same takedowns accuracy')
+      
+      if col == 'Submission Average/15 min.':
+        if col_dict[fighter_1] > col_dict[fighter_2]:
+          col_dict['winner'] = fighter_1
+          winner_dict[fighter_1] +=1
+        elif col_dict[fighter_2] > col_dict[fighter_1]:
+          col_dict['winner'] = fighter_2
+          winner_dict[fighter_2] +=1
+        else:
+          print('both fighters have the same submission average/15 min.')
+
+      result[col] = col_dict
+
+  result['count'] = winner_dict
+  if winner_dict[fighter_1] > winner_dict[fighter_2]:
+    result['winner'] = fighter_1
+  elif winner_dict[fighter_2] > winner_dict[fighter_1]:
+    result['winner'] = fighter_2
+  else:
+    result['winner'] = 'Draw'
+  return result

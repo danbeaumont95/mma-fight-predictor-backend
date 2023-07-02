@@ -1,0 +1,97 @@
+{
+  "data": {
+    "Tale of the tape": {
+      "Robert Whittaker": "Tale of the tape",
+      "Dricus Du Plessis": "Tale of the tape"
+    },
+    "Wins/Losses/Draws": {
+      "Robert Whittaker": "25-6-0",
+      "Dricus Du Plessis": "19-2-0",
+      "winner": "Dricus Du Plessis"
+    },
+    "Average Fight Time": {
+      "Robert Whittaker": "14:25",
+      "Dricus Du Plessis": "9:33"
+    },
+    "Height": {
+      "Robert Whittaker": "6' 0\"",
+      "Dricus Du Plessis": "6' 1\""
+    },
+    "Weight": {
+      "Robert Whittaker": "185 lbs.",
+      "Dricus Du Plessis": "185 lbs."
+    },
+    "Reach": {
+      "Robert Whittaker": "73\"",
+      "Dricus Du Plessis": "76\"",
+      "winner": "Dricus Du Plessis"
+    },
+    "Stance": {
+      "Robert Whittaker": "Orthodox",
+      "Dricus Du Plessis": "Switch"
+    },
+    "DOB": {
+      "Robert Whittaker": "Dec 20, 1990",
+      "Dricus Du Plessis": "Jan 14, 1994"
+    },
+    "Striking (Significant Strikes)": {
+      "Robert Whittaker": "Striking (Significant Strikes)",
+      "Dricus Du Plessis": "Striking (Significant Strikes)"
+    },
+    "Strikes Landed per Min. (SLpM)": {
+      "Robert Whittaker": "4.48",
+      "Dricus Du Plessis": "6.72",
+      "winner": "Dricus Du Plessis"
+    },
+    "Striking Accuracy": {
+      "Robert Whittaker": "42%",
+      "Dricus Du Plessis": "55%",
+      "winner": "Dricus Du Plessis"
+    },
+    "Strikes Absorbed per Min. (SApM)": {
+      "Robert Whittaker": "3.26",
+      "Dricus Du Plessis": "3.73",
+      "winner": "Robert Whittaker"
+    },
+    "Defense": {
+      "Robert Whittaker": "61%",
+      "Dricus Du Plessis": "53%",
+      "winner": "Robert Whittaker"
+    },
+    "Grappling": {
+      "Robert Whittaker": "Grappling",
+      "Dricus Du Plessis": "Grappling"
+    },
+    "Takedowns Average/15 min.": {
+      "Robert Whittaker": "0.82",
+      "Dricus Du Plessis": "2.83",
+      "winner": "Dricus Du Plessis"
+    },
+    "Takedown Accuracy": {
+      "Robert Whittaker": "37%",
+      "Dricus Du Plessis": "47%",
+      "winner": "Dricus Du Plessis"
+    },
+    "Takedown Defense": {
+      "Robert Whittaker": "84%",
+      "Dricus Du Plessis": "50%",
+      "winner": "Robert Whittaker"
+    },
+    "Submission Average/15 min.": {
+      "Robert Whittaker": "0.0",
+      "Dricus Du Plessis": "1.3",
+      "winner": "Dricus Du Plessis"
+    },
+    "Most recent fights (Newest First)": {
+      "Robert Whittaker": "Most recent fights (Newest First)",
+      "Dricus Du Plessis": "Most recent fights (Newest First)"
+    },
+    "count": {
+      "Robert Whittaker": 3,
+      "Dricus Du Plessis": 7
+    },
+    "winner": "Dricus Du Plessis"
+  },
+  "message": "Success",
+  "status": 200
+}

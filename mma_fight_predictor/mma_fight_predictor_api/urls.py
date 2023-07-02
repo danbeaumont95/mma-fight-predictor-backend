@@ -24,5 +24,6 @@ urlpatterns = [
     path('fighter/get_stats_for_match_up', FighterList.get_stats_for_match_up, name='get_stats_for_match_up'),
     path('get_fight_style_with_most_wins', get_fight_style_with_best_win_percentage_api_call, name='your-get_fight_style_with_most_wins-name'),
     path('prediction/', PredictionList.as_view(), name='prediction'),
+    path('prediction/bulk_insert_predictions', PredictionList.bulk_insert_predictions, name='bulk_insert_predictions'),
 
 ]
