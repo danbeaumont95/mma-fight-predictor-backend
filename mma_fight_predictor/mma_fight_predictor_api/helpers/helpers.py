@@ -10,7 +10,7 @@ import csv
 import re
 from pandas_schema.validation import CustomElementValidation
 from django.db.models import F, Func
-from .constants import WEIGHT_CLASSES, PREDICTION_LOOKUP
+from .constants import WEIGHT_CLASSES, PREDICTION_LOOKUP, FIGHT_MATRIX_DATE_LOOKUP, WEIGHT_CLASS_LOOKUP, FIGHT_MATRIX_WEIGHT_CLASS_LOOKUP, FIGHT_WEIGHT_CLASS_LOOKUP_TO_WEIGHT
 from pandas_schema import Column, Schema
 from ..Fighter.models import Fighter
 from ..User.models import User
@@ -53,7 +53,6 @@ def compare_fractions(fraction1, fraction2):
 
     # Compare the numerators
     if numerator1 > numerator2:
-        # return "The first fraction {} is larger than the second fraction {}.".format(fraction1, fraction2)
         return fraction1[2]
     elif numerator1 < numerator2:
         return fraction2[2]
@@ -91,7 +90,6 @@ def get_fighters_fighting_style(name):
     return None
   style = fighting_style_div.find_next_sibling('div').get_text()
   best_fight_style = get_fight_style_with_best_win_percentage()
-  print(best_fight_style, 'best_fight_style1')
   try:
     Fighter.objects.filter(first_name=first_name, last_name=last_name).update(style=style)
   except Exception as e:
@@ -886,7 +884,6 @@ def get_last_name(fighter_name):
   return joined_string
 
 def create_new_fighter(fighter_name, fight_link):
-  print(fighter_name, fight_link)
   new_fighter = Fighter()
   new_fighter.first_name = fighter_name.split()[0].lower()
   new_fighter.last_name = get_last_name(fighter_name)
@@ -899,18 +896,18 @@ def get_fighter(fighter_name):
   fighter = Fighter.objects.filter(first_name=fighter_name.split()[0].lower(), last_name=last_name).first()
   return fighter
 
+def get_fighter_name(fighter):
+  return f"{fighter.first_name} {fighter.last_name}"
+
 def add_fight_prediction_to_db(data, fight_date, fight_link=None):
   items_that_have_winners = ['Wins/Losses/Draws', 'Reach', 'Strikes Landed per Min. (SLpM)', 'Striking Accuracy', 'Strikes Absorbed per Min. (SApM)', 'Defense', 'Takedowns Average/15 min.', 'Takedown Accuracy', 'Takedown Defense', 'Submission Average/15 min.']
   new_prediction = Prediction()
   
   for item in data:
-    print(item, 'item1')
     for key, value in item.items():
         if key == 'Tale of the tape':
           blue_fighter_name = next(iter(value))
-          print(blue_fighter_name, 'blue_fighter_name1')
           red_fighter_name = next(iter(value.keys() - {blue_fighter_name}))
-          print(red_fighter_name, 'red_fighter_name1')
           blue_fighter = get_fighter(blue_fighter_name)
           if blue_fighter is None:
             print('blue fighter doesnt exist')
@@ -919,9 +916,7 @@ def add_fight_prediction_to_db(data, fight_date, fight_link=None):
               # Dan TO-DO insert fighter into db here
               create_new_fighter(blue_fighter_name, fight_link)
               blue_fighter = get_fighter(blue_fighter_name)
-          print(blue_fighter, 'blue_fighter')
           red_fighter = get_fighter(red_fighter_name)
-          print(red_fighter, 'red_fighter')
           if red_fighter is None:
             print('red fighter doesnt exist')
             if fight_link is not None:
@@ -941,8 +936,6 @@ def add_fight_prediction_to_db(data, fight_date, fight_link=None):
             return 'Fight already in database'
         if key in items_that_have_winners:
           lookup_val = PREDICTION_LOOKUP[key] 
-          print(key, 'key1')
-          print(value, 'value1')
           if 'winner' in value:
             winner = Fighter.objects.filter(first_name=value['winner'].split()[0].lower(), last_name=value['winner'].split()[-1].lower()).first()
             setattr(new_prediction, lookup_val, winner)
@@ -1175,3 +1168,73 @@ def get_basic_fight_stats_from_event(url):
   else:
     result['winner'] = 'Draw'
   return result
+
+def get_fighter_previous_opponents(fighter,only_wins=False):
+  fights = Fight.objects.filter(Q(red_fighter=fighter) | Q(blue_fighter=fighter))
+  opponents = []
+  for fight in fights:
+        if fight.red_fighter.filter(id=fighter.id).exists():
+            opponent = fight.blue_fighter.first()
+            if only_wins == True:
+              name = get_fighter_name(fighter)
+              fight_winner = fight.winner.lower()
+              if fight_winner == name:
+                opponents.append({'name': f"{opponent.first_name} {opponent.last_name}", 'date': fight.date, 'weight_class': fight.fight_type})
+            else:
+              opponents.append({'name': f"{opponent.first_name} {opponent.last_name}", 'date': fight.date, 'weight_class': fight.fight_type})
+        else:
+            opponent = fight.red_fighter.first()
+            if only_wins == True:
+              name = get_fighter_name(fighter)
+              fight_winner = fight.winner.lower()
+              if fight_winner == name:
+                opponents.append({'name': f"{opponent.first_name} {opponent.last_name}", 'date': fight.date, 'weight_class': fight.fight_type})
+            else:
+              opponents.append({'name': f"{opponent.first_name} {opponent.last_name}", 'date': fight.date, 'weight_class': fight.fight_type})
+  return opponents
+
+
+def find_closest_date(target_date):
+    target_date = target_date.strftime('%m/%d/%Y')
+    closest_dates = [date for date in FIGHT_MATRIX_DATE_LOOKUP.values() if datetime.strptime(date, '%m/%d/%Y') < datetime.strptime(target_date, '%m/%d/%Y')]
+    if closest_dates:
+        closest_date = max(closest_dates, key=lambda x: datetime.strptime(x, '%m/%d/%Y'))
+        return datetime.strptime(closest_date, '%m/%d/%Y').date()
+    else:
+        return None
+
+def get_fighters_wins_if_in_top_10(fighter_name):
+    fighter = get_fighter(fighter_name)
+    all_fighter_previous_opponents = get_fighter_previous_opponents(fighter,only_wins=True)
+    opps = []
+    for item in all_fighter_previous_opponents:
+      opponent = get_fighter(item['name'])
+      opponent_weight = opponent.weight
+      weight_class_fight_was_at = FIGHT_WEIGHT_CLASS_LOOKUP_TO_WEIGHT[item['weight_class']]
+
+      closest_date = find_closest_date(item['date'])
+      formatted_closest_date = closest_date.strftime('%m/%d/%Y')
+      matrix_date_key = next(key for key, value in FIGHT_MATRIX_DATE_LOOKUP.items() if value == formatted_closest_date)
+
+      opponent_weight_lookup = WEIGHT_CLASS_LOOKUP[opponent_weight]
+
+      matrix_weight_class_value = FIGHT_MATRIX_WEIGHT_CLASS_LOOKUP[weight_class_fight_was_at]
+
+    # https://www.fightmatrix.com/historical-mma-rankings/generated-historical-rankings/?Issue=69&Division=4
+
+      url = f"https://www.fightmatrix.com/historical-mma-rankings/generated-historical-rankings/?Issue={matrix_date_key}&Division={matrix_weight_class_value}"
+      soup = get_soup_from_url(url)
+      table = soup.find('table', {'class': 'tblRank'} )
+      a_tags = table.find_all('a', href=lambda href: href and href.startswith('/fighter-profile/'))
+      for a_tag in a_tags:
+          tr_tag = a_tag.find_parent('tr')
+          opponent_name = tr_tag.find('strong').text.strip().lower()
+          opponent_ranking = tr_tag.find('td', {'class', 'tdRank'})
+          if opponent_ranking != None:
+            opponent_ranking = opponent_ranking.text.strip()
+          if item['name'] == opponent_name:
+            opps.append({'opponent_name': opponent_name,'ranking': opponent_ranking})
+    filtered_opps = filter(lambda x: x['ranking'] == 'c' or (x['ranking'] is not None and int(x['ranking']) <= 10), opps)
+    opps_that_were_champ_or_top_ten = list(filtered_opps)
+    return opps_that_were_champ_or_top_ten
+

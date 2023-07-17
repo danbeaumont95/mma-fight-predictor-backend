@@ -17,29 +17,19 @@ class PredictionList(APIView):
     return return_response({}, added_prediction, status.HTTP_200_OK)
     
   def delete(self, request):
-    # all_preds = Prediction.objects.all()
-    # all_preds.delete()
-    # Prediction.objects.all().delete()
-
-    # Prediction.objects.all().delete()
-    # predictions = Prediction.objects.all()
-
-    # # Iterate over the Prediction objects and delete them
-    # for prediction in predictions:
-    #     # Delete the Prediction object, which will also delete related records due to the foreign key constraints
-    #     prediction.delete()
     Prediction.objects.filter(red_fighter_id=False).delete()
   
   @api_view(['POST'])
   def bulk_insert_predictions(request):
     date = request.data.get('date')
+      
     next_fight_card_already_in_db = Prediction.objects.filter(fight_date=date).exists()
     if next_fight_card_already_in_db == True:
       return return_response({}, 'Success! Fight event already in database', status.HTTP_200_OK)
     upcoming_events_url = 'http://ufcstats.com/statistics/events/upcoming'
     soup = get_soup_from_url(upcoming_events_url)
 
-    second_a_tag = soup.find_all('a', href=lambda href: href and href.startswith("http://ufcstats.com/event-details/"))[1]
+    second_a_tag = soup.find_all('a', href=lambda href: href and href.startswith("http://ufcstats.com/event-details/"))[0]
 
     # Print the href attribute of the found <a> tag
     if second_a_tag:

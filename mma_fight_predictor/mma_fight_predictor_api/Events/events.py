@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from rest_framework.views import APIView
-from ..helpers.helpers import return_response, get_soup_from_url, compare_fractions, get_fighters_fighting_style, get_fighters_record_again_each_opponents_fight_style, find_max, get_fighters_fighting_stance, get_all_fights_in_event, get_basic_fight_stats_from_event
+from ..helpers.helpers import return_response, get_soup_from_url, compare_fractions, get_fighters_fighting_style, get_fighters_record_again_each_opponents_fight_style, find_max, get_fighters_fighting_stance, get_all_fights_in_event, get_basic_fight_stats_from_event, get_fighters_wins_if_in_top_10
 from rest_framework import status
 from rest_framework.decorators import api_view
 import pandas as pd
@@ -25,6 +25,9 @@ class EventsList(APIView):
     event_name = soup.find_all('a', {'class': 'b-link b-link_style_black'})
 
     events = ({'name': item.get_text(strip=True), 'link': item.get("href")} for item in event_name)
+    
+    # dan dont need below
+    # get_fighters_wins_if_in_top_10('conor mcgregor')
 
     return return_response(events, 'Sucess', status.HTTP_200_OK)
   
@@ -32,22 +35,6 @@ class EventsList(APIView):
   def get_event_by_id(request):
     # url = f'http://ufcstats.com/event-details/3c6976f8182d9527'
     url = request.data.get('event_url')
-    # if 'link' in url:
-    #   url = url['link']
-    # soup = get_soup_from_url(url)
-    
-    # date_element = soup.find('li', class_='b-list__box-list-item').text.strip().split('\n')[-1].strip()    
-    # fights_html = soup.find_all('tr', {'class': 'js-fight-details-click'})
-    
-    # fights_data = []
-    # for item in fights_html:
-    #   link = item.get("data-link")
-    #   fighter_names = item.find_all('td', {'class': 'b-fight-details__table-col l-page_align_left'})[0].find_all('a')
-    #   fighter_1_name = fighter_names[0].get_text(strip=True)
-    #   fighter_2_name = fighter_names[1].get_text(strip=True)
-    #   weight_class = item.find_all('td', {'class': 'b-fight-details__table-col l-page_align_left'})[1].get_text(strip=True)
-    #   fight_data = {'fighter_1': fighter_1_name, 'fighter_2': fighter_2_name, 'weight_class': weight_class, 'link': link, 'date': date_element}
-    #   fights_data.append(fight_data)
     fights_data = get_all_fights_in_event(url)
     return return_response(fights_data, 'Success', status.HTTP_200_OK)
   
