@@ -27,6 +27,7 @@ from django.db.models.functions import Coalesce, Lower, Trim, Substr, Concat
 from django.db import connection
 from ..Prediction.models import Prediction
 from datetime import datetime
+import sys
 
 def convert_snake_to_camel(string: str) -> str:
     string = re.sub(r'(?<=[a-z0-9])(?=[A-Z0-9])|[^a-zA-Z0-9]',
@@ -1237,4 +1238,3 @@ def get_fighters_wins_if_in_top_10(fighter_name):
     filtered_opps = filter(lambda x: x['ranking'] == 'c' or (x['ranking'] is not None and int(x['ranking']) <= 10), opps)
     opps_that_were_champ_or_top_ten = list(filtered_opps)
     return opps_that_were_champ_or_top_ten
-
