@@ -53,7 +53,10 @@ class EventsList(APIView):
     fighter_1_style = get_fighters_fighting_style(fighter_1)
     fighter_2_style = get_fighters_fighting_style(fighter_2)
     fighter_1_stance = get_fighters_fighting_stance(fighter_1)
+    fighter_1_stance = fighter_1_stance.lower()
     fighter_2_stance = get_fighters_fighting_stance(fighter_2)
+    fighter_2_stance = fighter_2_stance.lower()
+
     
     fighter_1_names_list = fighter_1.split()
     fighter_1_stats_search_url = f'http://ufcstats.com/statistics/fighters/search?query={fighter_1_names_list[0]}'
@@ -72,6 +75,7 @@ class EventsList(APIView):
     fighter_2_stats_url_href =  fighter_2_a_tag.get('href')
     
     fighter_1_data = get_fighters_record_again_each_opponents_fight_style(fighter_1,fighter_1_stats_url_href )
+
     fighter_2_data = get_fighters_record_again_each_opponents_fight_style(fighter_2,fighter_2_stats_url_href )
     
     all_fighter_1_opponents = fighter_1_data['opponents']
@@ -83,16 +87,16 @@ class EventsList(APIView):
     
     fighter_1_record_agains_each_opponent_style = fighter_1_data['record']
     fighter_2_record_agains_each_opponent_style = fighter_2_data['record']
+
     fighter_1_record_agains_each_opponent_stance = fighter_1_data['fighter_1_record_agains_each_opponent_stance']
     fighter_2_record_agains_each_opponent_stance = fighter_2_data['fighter_1_record_agains_each_opponent_stance']
     
     fighter_1_record_agains_fighter_2_srtle = fighter_1_record_agains_each_opponent_style[fighter_2_style] if fighter_2_style in fighter_1_record_agains_each_opponent_style else []
     fighter_1_record_agains_fighter_2_stance = fighter_1_record_agains_each_opponent_stance[fighter_2_stance] if fighter_2_stance in fighter_1_record_agains_each_opponent_stance else []    
-    
-    fighter_2_record_agains_fighter_1_srtle = fighter_2_record_agains_each_opponent_style[fighter_1_style] if fighter_1_style in fighter_2_record_agains_each_opponent_style else []
-    
-    fighter_2_record_agains_fighter_1_stance = fighter_2_record_agains_each_opponent_stance[fighter_1_stance] if fighter_1_stance in fighter_2_record_agains_each_opponent_stance else []
 
+    fighter_2_record_agains_fighter_1_srtle = fighter_2_record_agains_each_opponent_style[fighter_1_style] if fighter_1_style in fighter_2_record_agains_each_opponent_style else []
+
+    fighter_2_record_agains_fighter_1_stance = fighter_2_record_agains_each_opponent_stance[fighter_1_stance] if fighter_1_stance in fighter_2_record_agains_each_opponent_stance else []
 
     have_fighters_fought_before: bool = fighter_1.lower() in all_fighter_2_opponents or fighter_2.lower() in all_fighter_1_opponents
     

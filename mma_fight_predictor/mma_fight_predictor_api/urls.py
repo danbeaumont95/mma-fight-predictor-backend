@@ -27,5 +27,7 @@ urlpatterns = [
     path('prediction/', PredictionList.as_view(), name='prediction'),
     path('prediction/bulk_insert_predictions', PredictionList.bulk_insert_predictions, name='bulk_insert_predictions'),
     # path('fighter/scrape_fighter_stats', scrape_raw_fighter_details, name='scrape_raw_fighter_details')
-    path('fighter/scrape_fighter_stats', FighterList.scrape_fighter_details, name='scrape_fighter_details')
+    path('fighter/scrape_fighter_stats', FighterList.scrape_fighter_details, name='scrape_fighter_details'),
+    path('fighter/scrape_fight_stats', FighterList.scrape_fight_details, name='scrape_fight_details'),
+    path('prediction/add_winners_to_predictions', PredictionList.add_winners_to_predictions, name='add_winners_to_predictions'),
 ]

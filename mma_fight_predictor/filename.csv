@@ -1,9 +1,12 @@
 W/L,Fighter,Kd,Str,Td,Sub,Event,Method,Round,Time
-loss,Andre Muniz  Brendan Allen,0  0,43  42,0  1,0  2,"UFC Fight Night: Muniz vs. Allen  Feb. 25, 2023",SUB  Rear Naked Choke,3.0,4:25
-win,Andre Muniz  Uriah Hall,0  0,17  6,4  0,0  0,"UFC 276: Adesanya vs. Cannonier  Jul. 02, 2022",U-DEC,3.0,5:00
-win,Andre Muniz  Eryk Anders,0  0,8  3,2  0,2  0,"UFC 269: Oliveira vs. Poirier  Dec. 11, 2021",SUB  Armbar,1.0,3:13
-win,Andre Muniz  Jacare Souza,0  0,7  11,2  1,1  0,"UFC 262: Oliveira vs. Chandler  May. 15, 2021",SUB  Armbar,1.0,3:59
-win,Andre Muniz  Bartosz Fabinski,0  0,4  5,0  1,2  0,"UFC Fight Night: Overeem vs. Sakai  Sep. 05, 2020",SUB  Armbar,1.0,2:42
-win,Andre Muniz  Antonio Arroyo,0  0,22  29,3  1,2  0,"UFC Fight Night: Blachowicz vs. Jacare  Nov. 16, 2019",U-DEC,3.0,5:00
-win,Andre Muniz  Taylor Johnson,0  0,2  9,0  1,1  0,"DWCS 3.7  Aug. 06, 2019",SUB  Rear Naked Choke,1.0,1:46
-win,Andre Muniz  Bruno Assis,0  0,48  19,3  2,0  1,"DWCS Brazil 1.2  Aug. 11, 2018",U-DEC,3.0,5:00
+win,Sean O'Malley  Petr Yan,0  0,84  58,0  6,0  0,"UFC 280: Oliveira vs. Makhachev  Oct. 22, 2022",S-DEC,3.0,5:00
+nc,Sean O'Malley  Pedro Munhoz,0  0,25  26,0  0,0  0,"UFC 276: Adesanya vs. Cannonier  Jul. 02, 2022",CNC,2.0,3:09
+win,Sean O'Malley  Raulian Paiva,1  0,39  11,0  0,0  0,"UFC 269: Oliveira vs. Poirier  Dec. 11, 2021",KO/TKO  Punches,1.0,4:42
+win,Sean O'Malley  Kris Moutinho,1  0,230  70,0  0,0  0,"UFC 264: Poirier vs. McGregor 3  Jul. 10, 2021",KO/TKO  Punches,3.0,4:33
+win,Sean O'Malley  Thomas Almeida,2  0,86  25,0  1,0  0,"UFC 260: Miocic vs. Ngannou  Mar. 27, 2021",KO/TKO  Punch,3.0,3:52
+loss,Sean O'Malley  Marlon Vera,0  0,10  18,0  0,0  0,"UFC 252: Miocic vs. Cormier 3  Aug. 15, 2020",KO/TKO  Elbows,1.0,4:40
+win,Sean O'Malley  Eddie Wineland,1  0,13  4,0  0,0  0,"UFC 250: Nunes vs. Spencer  Jun. 06, 2020",KO/TKO  Punch,1.0,1:54
+win,Sean O'Malley  Jose Quinonez,0  0,18  0,0  0,0  0,"UFC 248: Adesanya vs. Romero  Mar. 07, 2020",KO/TKO  Punches,1.0,2:02
+win,Sean O'Malley  Andre Soukhamthath,0  0,63  25,0  4,3  0,"UFC 222: Cyborg vs. Kunitskaya  Mar. 03, 2018",U-DEC,3.0,5:00
+win,Sean O'Malley  Terrion Ware,0  0,141  88,3  0,0  0,"The Ultimate Fighter: A New World Champion Finale  Dec. 01, 2017",U-DEC,3.0,5:00
+win,Sean O'Malley  Alfred Khashakyan,2  0,27  26,0  1,0  0,"DWCS 1.2  Jul. 18, 2017",KO/TKO  Punch,1.0,4:14

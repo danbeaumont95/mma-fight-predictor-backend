@@ -4,7 +4,7 @@ from rest_framework import status
 from .serializers import FighterSerializer
 from .models import Fighter
 from ..Fights.models import Fight
-from ..helpers.scraping import scrape_raw_fighter_details
+from ..helpers.scraping import scrape_raw_fighter_details, scrape_raw_fight_details
 from ..helpers.helpers import read_fighters_file, read_fight_file, get_fights_ending_in_ko,get_fighters_with_weight_class_change, return_response
 from ..helpers.constants import WEIGHT_CLASSES
 from rest_framework.decorators import api_view
@@ -208,4 +208,8 @@ class FighterList(APIView):
     @api_view(['GET'])
     def scrape_fighter_details(request):
       scrape_raw_fighter_details()
+      return return_response({}, 'Success', status.HTTP_200_OK)
+    @api_view(['GET'])
+    def scrape_fight_details(request):
+      scrape_raw_fight_details()
       return return_response({}, 'Success', status.HTTP_200_OK)

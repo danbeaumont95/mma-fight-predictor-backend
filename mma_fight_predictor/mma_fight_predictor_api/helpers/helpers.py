@@ -66,38 +66,43 @@ fraction2 = (21, 3)
 
 
 def get_fighters_fighting_style(name):
-  name_parts = name.split()
-  first_name = name_parts[0]
-  if len(name_parts) > 1:
-    if len(name_parts) > 2:
-      last_name = " ".join(name_parts[1:])
-    else:
-      last_name = name_parts[1]
-  else:
-    last_name = None
-  user_in_db = Fighter.objects.filter(first_name=first_name, last_name=last_name).exists()
-
-  if user_in_db == True:
-    fighter = Fighter.objects.filter(first_name=first_name, last_name=last_name).first()
-    style = fighter.style
-    return style
-  url = f'https://www.ufc.com/athlete/{name.replace(" ", "-")}'
-  headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-  response = requests.get(url, headers=headers)
-  soup = BeautifulSoup(response.content, 'html.parser')
-  fighting_style_div = soup.find('div', text='Fighting style')
-  if fighting_style_div == None:
-    return None
-  style = fighting_style_div.find_next_sibling('div').get_text()
-  best_fight_style = get_fight_style_with_best_win_percentage()
   try:
-    Fighter.objects.filter(first_name=first_name, last_name=last_name).update(style=style)
-  except Exception as e:
-    print(e, 'error updating fighter style in database')
-      
-  return style
+    name_parts = name.split()
+    first_name = name_parts[0]
+    if len(name_parts) > 1:
+      if len(name_parts) > 2:
+        last_name = " ".join(name_parts[1:])
+      else:
+        last_name = name_parts[1]
+    else:
+      last_name = None
+    user_in_db = Fighter.objects.filter(first_name__iexact=first_name.lower() if first_name != None else first_name, last_name__iexact=last_name.lower() if last_name != None else last_name).exists()
+    if user_in_db == True:
+      fighter = Fighter.objects.filter(first_name__iexact=first_name.lower(), last_name__iexact=last_name.lower()).first()
+      style = fighter.style
+      if style is not None:
+        return style
+    url = f'https://www.ufc.com/athlete/{name.replace(" ", "-")}'
 
+    headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    fighting_style_div = soup.find('div', text='Fighting style')
+    if fighting_style_div == None:
+      return None
+    style = fighting_style_div.find_next_sibling('div').get_text()
+    best_fight_style = get_fight_style_with_best_win_percentage()
+    try:
+      Fighter.objects.filter(first_name=first_name.lower(), last_name=last_name.lower()).update(style=style)
+    except Exception as e:
+      print(e, 'error updating fighter style in database')
+        
+    return style
+
+  except Exception as e:
+    print(e, 'error getting style')
+    
 def get_fighters_fighting_stance(name):
     name_parts = name.split()
     first_name = name_parts[0]
@@ -108,9 +113,9 @@ def get_fighters_fighting_stance(name):
         last_name = name_parts[1]
     else:
       last_name = None
-    user_in_db = Fighter.objects.filter(first_name=first_name, last_name=last_name).exists()
+    user_in_db = Fighter.objects.filter(first_name__iexact=first_name, last_name__iexact=last_name).exists()
     if user_in_db == True:
-      fighter = Fighter.objects.filter(first_name=first_name, last_name=last_name).first()
+      fighter = Fighter.objects.filter(first_name__iexact=first_name, last_name__iexact=last_name).first()
       stance = fighter.stance
       return stance
     else:
@@ -126,6 +131,17 @@ def get_fighters_fighting_stance(name):
 
       return word
     
+from django.db.models import Q
+  
+def get_fighter_1_opponent_list_from_db(fighter_name):
+  fighter_name = fighter_name.lower()
+  all_fighter_fights = Fight.objects.filter(Q(winner__iexact=fighter_name) | Q(loser__iexact=fighter_name))
+
+  arr = []
+  for item in all_fighter_fights:
+    arr.append(f'{item.winner} {item.loser}')
+  return arr
+  
 def get_fighters_record_again_each_opponents_fight_style(fighter_name,url):
   fighter_1_fights_table_soup = get_soup_from_url(url)
   fighter_1_table = fighter_1_fights_table_soup.find('table')
@@ -133,7 +149,7 @@ def get_fighters_record_again_each_opponents_fight_style(fighter_name,url):
   fighter_1_df = fighter_1_dfs[0]
   fighter_1_df = fighter_1_df.dropna()
   fighter_1_df.to_csv('filename.csv', index=False)
-  fighter_1_opponent_list = fighter_1_df['Fighter'].tolist()
+  fighter_1_opponent_list = get_fighter_1_opponent_list_from_db(fighter_name)
   fighter_1_opponent_list_without_fighter_1 = [name.replace(fighter_name.title(), "").strip() for name in fighter_1_opponent_list]
   opponents_fighting_style = []
   opponents = []

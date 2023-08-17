@@ -4,7 +4,7 @@ from ..Fighter.models import Fighter
 class Prediction(models.Model):
   red_fighter = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='prediction_red_fighter')
   blue_fighter = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='prediction_blue_fighter')
-  fight_winner = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='fight_winner', null=True)
+  fight_winner = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='fight_winner', null=True) # winner of fight
   fight_date = models.DateField(blank=True, null=True)
   blue_fighter_wld_record = models.CharField(max_length=20)
   red_fighter_wld_record = models.CharField(max_length=20)
@@ -41,6 +41,6 @@ class Prediction(models.Model):
   submission_average_15_min_average_winner = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='submission_average_15_min_average_winner', null=True)
   blue_fighter_count= models.CharField(max_length=50)
   red_fighter_count = models.CharField(max_length=50)
-  count_winner = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='count_winner', null=True)
-  overall_winner = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='overall_winner', null=True)
+  count_winner = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='count_winner', null=True) # Prediction winner (fighter that get most prediction scores)
+  overall_winner = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='overall_winner', null=True) # Think this is duplicate of fight winner
   did_prediction_winner_win = models.BooleanField(null=True)
