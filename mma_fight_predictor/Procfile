@@ -1,0 +1,1 @@
+web: gunicorn mma_fight_predictor.wsgi --log-file -
