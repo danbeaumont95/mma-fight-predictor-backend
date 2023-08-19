@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', 'mma-fight-predictor-32bd49c8d76a.herokuapp.com', 'whitenoise.runserver_nostatic']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
