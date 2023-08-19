@@ -17,9 +17,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.urls import path
 from mma_fight_predictor_api import urls as mma_fight_predictor_urls
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('mma_fight_predictor/', include(mma_fight_predictor_urls)),
 ]
+
+urlpatterns += staticfiles_urlpatterns()
