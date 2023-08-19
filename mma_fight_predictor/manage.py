@@ -6,7 +6,7 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mma_fight_predictor.mma_fight_predictor.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mma_fight_predictor.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
