@@ -42,10 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'mma_fight_predictor_api',
+    # 'mma_fight_predictor_api',
     'django_extensions',
     'corsheaders',
-
 ]
 
 MIDDLEWARE = [
