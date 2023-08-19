@@ -12,7 +12,7 @@ import sys
 from django.core.wsgi import get_wsgi_application
 sys.path.append('/mma_fight_predictor')
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mma_fight_predictor.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mma_fight_predictor.mma_fight_predictor.settings')
 
 
 application = get_wsgi_application()
