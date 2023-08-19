@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'mma_fight_predictor.mma_fight_predictor_api',
-    'mma_fight_predictor_api123',
+    # 'mma_fight_predictor_api123',
     'django_extensions',
     'corsheaders',
 ]
