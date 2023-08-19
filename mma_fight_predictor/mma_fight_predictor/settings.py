@@ -82,7 +82,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'mma_fight_predictor.mma_fight_predictor.wsgi.application'
+WSGI_APPLICATION = 'mma_fight_predictor.wsgi.application'
 
 CORS_ORIGIN_ALLOW_ALL = True
 
