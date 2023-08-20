@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.urls import path
-from mma_fight_predictor_api import urls as mma_fight_predictor_urls
+from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [

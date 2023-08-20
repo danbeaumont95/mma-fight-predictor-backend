@@ -64,7 +64,7 @@ MIDDLEWARE = [
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-ROOT_URLCONF = 'mma_fight_predictor.urls'
+ROOT_URLCONF = 'mma_fight_predictor.mma_fight_predictor.urls'
 
 TEMPLATES = [
     {
@@ -163,3 +163,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 MEDIA_URL = 'media/'
+
+# gunicorn mma_fight_predictor.mma_fight_predictor.wsgi:application
