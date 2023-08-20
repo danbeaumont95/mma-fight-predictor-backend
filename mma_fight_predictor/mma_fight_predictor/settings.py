@@ -111,10 +111,21 @@ CORS_ALLOWED_ORIGINS = [
 #         'PORT': '',
 #     }
 # }
-
-DATABASES = {
-  'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
-}
+if os.environ.get('ENV') == "PROD":
+  DATABASES = {
+    'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+  }
+else:
+  DATABASES = {
+      'default': {
+          'ENGINE': 'django.db.backends.postgresql_psycopg2',
+          'NAME': os.getenv('DB_NAME'),
+          'USER': os.getenv('DB_USER'),
+          'PASSWORD': os.getenv('DB_PASSWORD'),
+          'HOST': 'localhost',
+          'PORT': '',
+      }
+  }
 
 # db_from_env = dj_database_url.config(conn_max_age=600)
 # DATABASES['default'].update(db_from_env)
