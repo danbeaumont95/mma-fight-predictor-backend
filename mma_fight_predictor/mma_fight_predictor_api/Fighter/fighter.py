@@ -201,8 +201,8 @@ class FighterList(APIView):
     def get_stats_for_match_up(request):
       fighter_1_name = request.GET.get('fighter_1').lower()
       fighter_2_name = request.GET.get('fighter_2').lower()
-      fighter_1_stats = Fighter.objects.filter(first_name=fighter_1_name.split()[0], last_name=fighter_1_name.split()[-1].lower()).values().first()
-      fighter_2_stats = Fighter.objects.filter(first_name=fighter_2_name.split()[0], last_name=fighter_2_name.split()[-1]).values().first()
+      fighter_1_stats = Fighter.objects.filter(first_name=fighter_1_name.split('-')[0], last_name=fighter_1_name.split('-')[-1].lower()).values().first()
+      fighter_2_stats = Fighter.objects.filter(first_name=fighter_2_name.split('-')[0], last_name=fighter_2_name.split('-')[-1]).values().first()
       return return_response({'fighter_1_stats': fighter_1_stats, 'fighter_2_stats': fighter_2_stats}, 'Success', status.HTTP_200_OK)
       
     @api_view(['GET'])
