@@ -1,4 +1,5 @@
-source /Users/danbeaumont95/Desktop/Python-Projects/mma-fight-predictor/django_env/bin/activate
-cd mma_fight_predictor/
+#!/usr/bin/env bashcd mma_fight_predictor/
+set -o errexit  # exit on error
+pip install -r requirements.txt
 python manage.py makemigrations
 python manage.py migrate
