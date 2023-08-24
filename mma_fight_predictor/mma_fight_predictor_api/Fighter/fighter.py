@@ -17,11 +17,16 @@ import datetime
 import re
 import requests
 from bs4 import BeautifulSoup
+from ..FighterImage.models import Image
+from django.core.files.base import ContentFile
+from django.http import JsonResponse
+import base64
 
 class FighterList(APIView):
     def get(self, request):
         fighters = Fighter.objects.all()
         serializer = FighterSerializer(fighters, many=True)
+        
         return Response(serializer.data)
       
     @api_view(['POST'])
@@ -179,6 +184,26 @@ class FighterList(APIView):
     @api_view(['GET'])
     def get_fighter_image(request):
       fighter_name = request.GET.get('fighter')
+      name_parts = fighter_name.split('-')
+      first_name = name_parts[0]
+      if len(name_parts) > 1:
+        if len(name_parts) > 2:
+          last_name = " ".join(name_parts[1:])
+        else:
+          last_name = name_parts[1]
+      else:
+        last_name = None
+      fighter = Fighter.objects.filter(first_name__iexact=first_name, last_name__iexact=last_name).first()
+      if fighter is None:
+        first_name = ' '.join(name_parts[:-1])
+        last_name = name_parts[-1]
+        fighter = Fighter.objects.filter(first_name__iexact=first_name, last_name__iexact=last_name).first()
+      if fighter is not None:
+        existing_image = Image.objects.filter(fighter=fighter).first()
+        if existing_image:
+          image_data = existing_image.image_data.tobytes()  # Convert memoryview to bytes
+          image_data_base64 = base64.b64encode(image_data).decode()
+          return return_response(image_data_base64, 'Sucess', status.HTTP_200_OK)
       url = f'https://www.ufc.com/athlete/{fighter_name}'
       response = requests.get(url)
 
@@ -188,7 +213,18 @@ class FighterList(APIView):
 
           if image_element:
               image_src = image_element['src']
+              image_response = requests.get(image_src)
+
+              if image_response.status_code == 200:
+                  image_data = image_response.content
               print(f"Fighter Image Source: {image_src}")
+
+              if existing_image:
+                  existing_image.image_data = image_data
+                  existing_image.save()
+              else:
+                  image_model = Image(image_data=image_data, fighter=fighter)
+                  image_model.save()
               return return_response(image_src, 'Sucess', status.HTTP_200_OK)
           else:
               print("Fighter image not found.")

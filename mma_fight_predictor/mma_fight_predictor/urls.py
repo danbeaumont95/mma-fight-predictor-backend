@@ -13,9 +13,14 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import os
 from django.contrib import admin
 from django.urls import path, include
 from django.urls import path
+# if os.environ.get('ENV') == "PROD":
+#   from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls # PROD
+# else:
+#   from mma_fight_predictor_api import urls as mma_fight_predictor_urls
 from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 

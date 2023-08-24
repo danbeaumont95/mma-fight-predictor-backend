@@ -5,6 +5,7 @@ from .Prediction.prediction import PredictionList
 from django.urls import re_path as url, path
 from .helpers.helpers import update_loser_field, get_fight_style_with_best_win_percentage_api_call
 from .helpers.scraping import scrape_raw_fighter_details
+from .FighterImage.fighter_image import upload_image
 
 urlpatterns = [
     # path('api', OrganisationApiView.as_view()),
@@ -30,4 +31,5 @@ urlpatterns = [
     path('fighter/scrape_fighter_stats', FighterList.scrape_fighter_details, name='scrape_fighter_details'),
     path('fighter/scrape_fight_stats', FighterList.scrape_fight_details, name='scrape_fight_details'),
     path('prediction/add_winners_to_predictions', PredictionList.add_winners_to_predictions, name='add_winners_to_predictions'),
+    path('upload_fighter_image', upload_image, name='upload_image')
 ]

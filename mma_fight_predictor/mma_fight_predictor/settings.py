@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 STATIC_ROOT = os.path.join(BASE_DIR, "django_static", "static")
@@ -43,11 +43,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'mma_fight_predictor',
-    'mma_fight_predictor.mma_fight_predictor_api',
+    # 'mma_fight_predictor_api', # DEV
+    'mma_fight_predictor.mma_fight_predictor_api', # PROD
     # 'mma_fight_predictor_api123',
     'django_extensions',
     'corsheaders',
 ]
+# if os.environ.get('ENV') == "PROD":
+#   INSTALLED_APPS.append('mma_fight_predictor.mma_fight_predictor_api')
+# else:
+#   INSTALLED_APPS.append('mma_fight_predictor_api')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -63,7 +68,10 @@ MIDDLEWARE = [
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-
+# if os.environ.get('ENV') == "PROD":
+#   ROOT_URLCONF = 'mma_fight_predictor.mma_fight_predictor.urls' # PROD
+# else:
+#   ROOT_URLCONF = 'mma_fight_predictor.urls'
 ROOT_URLCONF = 'mma_fight_predictor.mma_fight_predictor.urls'
 
 TEMPLATES = [
