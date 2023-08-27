@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 import os
+import sys
 from django.contrib import admin
 from django.urls import path, include
 from django.urls import path
@@ -21,7 +22,10 @@ from django.urls import path
 #   from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls # PROD
 # else:
 #   from mma_fight_predictor_api import urls as mma_fight_predictor_urls
-from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls
+if 'makemigrations' in sys.argv or 'migrate' in sys.argv:
+  from mma_fight_predictor_api import urls as mma_fight_predictor_urls
+else:
+  from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [

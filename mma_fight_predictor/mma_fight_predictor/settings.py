@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
+import sys
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,7 +33,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 STATIC_ROOT = os.path.join(BASE_DIR, "django_static", "static")
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,16 +45,19 @@ INSTALLED_APPS = [
     'rest_framework',
     'mma_fight_predictor',
     # 'mma_fight_predictor_api', # DEV
-    'mma_fight_predictor.mma_fight_predictor_api', # PROD
+    # 'mma_fight_predictor.mma_fight_predictor_api', # PROD
     # 'mma_fight_predictor_api123',
     'django_extensions',
     'corsheaders',
 ]
+if 'makemigrations' not in sys.argv and 'migrate' not in sys.argv:
+  INSTALLED_APPS.append('mma_fight_predictor.mma_fight_predictor_api')
 # if os.environ.get('ENV') == "PROD":
 #   INSTALLED_APPS.append('mma_fight_predictor.mma_fight_predictor_api')
 # else:
 #   INSTALLED_APPS.append('mma_fight_predictor_api')
-
+if 'makemigrations' in sys.argv or 'migrate' in sys.argv:
+  INSTALLED_APPS.append('mma_fight_predictor_api')
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -73,6 +77,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # else:
 #   ROOT_URLCONF = 'mma_fight_predictor.urls'
 ROOT_URLCONF = 'mma_fight_predictor.mma_fight_predictor.urls'
+if 'makemigrations' in sys.argv or 'migrate' in sys.argv:
+  ROOT_URLCONF =  'mma_fight_predictor.urls'
 
 TEMPLATES = [
     {
