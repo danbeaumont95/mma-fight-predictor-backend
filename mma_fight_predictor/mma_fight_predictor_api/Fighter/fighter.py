@@ -219,19 +219,15 @@ class FighterList(APIView):
                   image_data = image_response.content
               print(f"Fighter Image Source: {image_src}")
 
-              if existing_image:
-                  existing_image.image_data = image_data
-                  existing_image.save()
-              else:
-                  image_model = Image(image_data=image_data, fighter=fighter)
-                  image_model.save()
+              image_model = Image(image_data=image_data, fighter=fighter)
+              image_model.save()
               return return_response(image_src, 'Sucess', status.HTTP_200_OK)
           else:
               print("Fighter image not found.")
               return return_response({}, 'Error', status.HTTP_200_OK)
       else:
           print("Failed to retrieve the UFC athlete page.")
-          return return_response({}, 'Error', status.HTTP_400_OK)
+          return return_response({}, 'Error', status.HTTP_400_BAD_REQUEST)
 
     @api_view(['GET'])
     def get_stats_for_match_up(request):

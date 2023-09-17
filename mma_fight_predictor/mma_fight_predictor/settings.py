@@ -14,6 +14,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 import sys
+from datetime import timedelta
 
 load_dotenv()
 
@@ -48,7 +49,7 @@ INSTALLED_APPS = [
     # 'mma_fight_predictor.mma_fight_predictor_api', # PROD
     # 'mma_fight_predictor_api123',
     'django_extensions',
-    'corsheaders',
+    'corsheaders'
 ]
 if 'makemigrations' not in sys.argv and 'migrate' not in sys.argv:
   INSTALLED_APPS.append('mma_fight_predictor.mma_fight_predictor_api')
@@ -69,6 +70,16 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 'whitenoise.middleware.WhiteNoiseMiddleware'
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=31),
+}
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 

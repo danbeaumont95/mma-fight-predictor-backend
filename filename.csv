@@ -1,28 +1,2 @@
 W/L,Fighter,Kd,Str,Td,Sub,Event,Method,Round,Time
-win,Max Holloway  Arnold Allen,0  0,147  76,0  0,0  0,"UFC Fight Night: Holloway vs. Allen  Apr. 15, 2023",U-DEC,5.0,5:00
-loss,Max Holloway  Alexander Volkanovski,0  0,127  199,0  0,0  0,"UFC 276: Adesanya vs. Cannonier  Jul. 02, 2022",U-DEC,5.0,5:00
-win,Max Holloway  Yair Rodriguez,0  0,230  159,3  1,1  0,"UFC Fight Night: Holloway vs. Rodriguez  Nov. 13, 2021",U-DEC,5.0,5:00
-win,Max Holloway  Calvin Kattar,0  0,445  133,0  0,0  0,"UFC Fight Night: Holloway vs. Kattar  Jan. 16, 2021",U-DEC,5.0,5:00
-loss,Max Holloway  Alexander Volkanovski,0  0,102  137,0  3,0  0,"UFC 251: Usman vs. Masvidal  Jul. 11, 2020",S-DEC,5.0,5:00
-loss,Max Holloway  Alexander Volkanovski,0  0,134  157,0  0,0  0,"UFC 245: Usman vs. Covington  Dec. 14, 2019",U-DEC,5.0,5:00
-win,Max Holloway  Frankie Edgar,0  0,129  96,0  1,0  0,"UFC 240: Holloway vs. Edgar  Jul. 27, 2019",U-DEC,5.0,5:00
-loss,Max Holloway  Dustin Poirier,0  0,181  178,0  1,1  0,"UFC 236: Holloway vs. Poirier 2  Apr. 13, 2019",U-DEC,5.0,5:00
-win,Max Holloway  Brian Ortega,0  0,290  110,1  2,0  0,"UFC 231: Holloway vs. Ortega  Dec. 08, 2018",KO/TKO,4.0,5:00
-win,Max Holloway  Jose Aldo,0  0,174  87,0  0,0  0,"UFC 218: Holloway vs. Aldo 2  Dec. 02, 2017",KO/TKO  Punches,3.0,4:51
-win,Max Holloway  Jose Aldo,1  0,104  55,0  0,0  0,"UFC 212: Aldo vs. Holloway  Jun. 03, 2017",KO/TKO  Punches,3.0,4:13
-win,Max Holloway  Anthony Pettis,1  0,94  53,2  0,0  0,"UFC 206: Holloway vs. Pettis  Dec. 10, 2016",KO/TKO  Punches,3.0,4:50
-win,Max Holloway  Ricardo Lamas,0  0,103  64,0  0,2  0,"UFC 199: Rockhold vs. Bisping 2  Jun. 04, 2016",U-DEC,3.0,5:00
-win,Max Holloway  Jeremy Stephens,0  0,57  47,1  0,0  0,"UFC 194: Aldo vs McGregor  Dec. 12, 2015",U-DEC,3.0,5:00
-win,Max Holloway  Charles Oliveira,0  0,14  5,0  0,0  0,"UFC Fight Night: Holloway vs Oliveira  Aug. 23, 2015",KO/TKO,1.0,1:39
-win,Max Holloway  Cub Swanson,0  0,82  56,0  0,3  0,"UFC on FOX: Machida vs Rockhold  Apr. 18, 2015",SUB  Guillotine Choke,3.0,3:58
-win,Max Holloway  Cole Miller,0  0,57  31,1  0,0  0,"UFC Fight Night: Henderson vs Thatch  Feb. 14, 2015",U-DEC,3.0,5:00
-win,Max Holloway  Akira Corassani,1  0,31  11,0  0,0  0,"UFC Fight Night: Nelson vs Story  Oct. 04, 2014",KO/TKO  Punch,1.0,3:11
-win,Max Holloway  Clay Collard,0  0,124  70,0  1,0  0,"UFC Fight Night: Henderson vs Dos Anjos  Aug. 23, 2014",KO/TKO  Punches,3.0,3:47
-win,Max Holloway  Andre Fili,0  0,47  44,0  3,2  0,"UFC 172: Jones vs Teixeira  Apr. 26, 2014",SUB  Guillotine Choke,3.0,3:39
-win,Max Holloway  Will Chope,2  0,74  33,0  0,0  0,"UFC Fight Night: Saffiedine vs Lim  Jan. 04, 2014",KO/TKO  Punch,2.0,2:27
-loss,Max Holloway  Conor McGregor,0  0,23  53,0  4,0  0,"UFC Fight Night: Shogun vs Sonnen  Aug. 17, 2013",U-DEC,3.0,5:00
-loss,Max Holloway  Dennis Bermudez,0  0,75  73,0  4,0  0,"UFC 160: Velasquez vs Silva 2  May. 25, 2013",S-DEC,3.0,5:00
-win,Max Holloway  Leonard Garcia,1  0,120  89,0  2,0  0,"UFC 155: Dos Santos vs Velasquez II  Dec. 29, 2012",S-DEC,3.0,5:00
-win,Max Holloway  Justin Lawrence,1  0,29  32,0  1,0  0,"UFC 150: Henderson vs Edgar II  Aug. 11, 2012",KO/TKO  Punch,2.0,4:49
-win,Max Holloway  Pat Schilling,1  0,118  27,0  0,0  0,"The Ultimate Fighter: Live Finale  Jun. 01, 2012",U-DEC,3.0,5:00
-loss,Max Holloway  Dustin Poirier,0  0,11  11,0  1,0  3,"UFC 143: Diaz vs Condit  Feb. 04, 2012",SUB  Triangle Armbar,1.0,3:23
+loss,Terrence Mitchell  Cameron Saaiman,0  0,3  18,1  2,0  1,"UFC 290: Volkanovski vs. Rodriguez  Jul. 08, 2023",KO/TKO  Punches,1.0,3:10

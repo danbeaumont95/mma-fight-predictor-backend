@@ -13,7 +13,7 @@ from django.db.models import F, Func
 from .constants import WEIGHT_CLASSES, PREDICTION_LOOKUP, FIGHT_MATRIX_DATE_LOOKUP, WEIGHT_CLASS_LOOKUP, FIGHT_MATRIX_WEIGHT_CLASS_LOOKUP, FIGHT_WEIGHT_CLASS_LOOKUP_TO_WEIGHT
 from pandas_schema import Column, Schema
 from ..Fighter.models import Fighter
-from ..User.models import User
+# from ..User.models import User
 from ..Fights.models import Fight
 from datetime import datetime
 from django.db.models import F, Q
@@ -28,6 +28,12 @@ from django.db import connection
 from ..Prediction.models import Prediction
 from datetime import datetime
 import sys
+import boto3
+from botocore.exceptions import ClientError
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from ..Tokens.models import Token
+from django.contrib.auth.models import User
 
 def convert_snake_to_camel(string: str) -> str:
     string = re.sub(r'(?<=[a-z0-9])(?=[A-Z0-9])|[^a-zA-Z0-9]',
@@ -1175,6 +1181,8 @@ def get_basic_fight_stats_from_event(url):
         else:
           print('both fighters have the same submission average/15 min.')
 
+      if col == 'Most recent fights (Newest First)':
+        print(col_dict, 'col_dict')
       result[col] = col_dict
 
   result['count'] = winner_dict
@@ -1254,3 +1262,107 @@ def get_fighters_wins_if_in_top_10(fighter_name):
     filtered_opps = filter(lambda x: x['ranking'] == 'c' or (x['ranking'] is not None and int(x['ranking']) <= 10), opps)
     opps_that_were_champ_or_top_ten = list(filtered_opps)
     return opps_that_were_champ_or_top_ten
+
+@api_view(['GET'])
+def get_test_price_id(request):
+  price = request.GET.get('price')
+  if price == '40':
+    secret_name = "test-mma-fourty-price-id"
+  else:
+    secret_name = "test-mma-five-price-id"
+  region_name = "eu-west-2"
+
+  # Create a Secrets Manager client
+  session = boto3.session.Session()
+  client = session.client(
+      service_name='secretsmanager',
+      region_name=region_name
+  )
+
+  try:
+      get_secret_value_response = client.get_secret_value(
+          SecretId=secret_name
+      )
+  except ClientError as e:
+      # For a list of exceptions thrown, see
+      # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+      raise e
+
+  # Decrypts secret using the associated KMS key.
+  secret = get_secret_value_response['SecretString']
+  secret = json.loads(secret)
+  if price == '40':
+    price_id = secret['test-mma-fourty-price-id']
+  else:
+    price_id = secret['test-mma-payment-five-price-id']
+  return Response({'price_id': price_id})
+
+@api_view(['GET'])
+def get_test_publishing_id(request):
+  secret_name = "test-mma-five-publishing-id"
+  region_name = "eu-west-2"
+
+  # Create a Secrets Manager client
+  session = boto3.session.Session()
+  client = session.client(
+      service_name='secretsmanager',
+      region_name=region_name
+  )
+
+  try:
+      get_secret_value_response = client.get_secret_value(
+          SecretId=secret_name
+      )
+  except ClientError as e:
+      # For a list of exceptions thrown, see
+      # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+      raise e
+
+  # Decrypts secret using the associated KMS key.
+  secret = get_secret_value_response['SecretString']
+  secret = json.loads(secret)
+  publishing_id = secret['test-mma-five-publishing-id']
+  return Response({'publishing_id':publishing_id})
+
+def is_valid_email(email):
+    try:
+        validate_email(email)
+        return True
+    except ValidationError:
+        return False
+
+def has_length(input):
+  if len(input) > 0:
+    return True
+  return False
+
+
+@api_view(['POST'])
+def save_tokens(request):
+  try:
+    refresh = request.data.get('refresh')
+    access = request.data.get('access')
+    username = request.data.get('username')
+    user = User.objects.filter(username=username)
+    if user is None:
+      return return_response({}, 'Error! Unable to find user.', status.HTTP_400_BAD_REQUEST)
+    token = Token.objects.filter(user=user.first())
+    if token.exists():
+      token_obj = token.first()
+      token_obj.first().access_token = access
+      token_obj.first().refresh_token = refresh
+      token_obj.save()
+    else:
+      Token.objects.create(user=user.first(), access_token=access, refresh_token=refresh)
+    return return_response({}, 'Success!', status.HTTP_201_CREATED)
+  except Exception as e:
+    return return_response({}, 'Error! Unable to save token', status.HTTP_500_INTERNAL_SERVER_ERROR)  
+  
+
+@api_view(['POST'])
+def get_username_from_email(request):
+  email = request.data.get('email')
+  username = User.objects.filter(email=email).first()
+  if username is None:
+    return return_response(username, 'Error!', status.HTTP_400_BAD_REQUEST)
+  return return_response(username.username, 'Success!', status.HTTP_200_OK)
