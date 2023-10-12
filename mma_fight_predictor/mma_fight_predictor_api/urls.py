@@ -1,4 +1,4 @@
-from .User.user import UserList
+from .User.user import UserList, check_access_token
 from .Events.events import EventsList
 from .Fighter.fighter import FighterList
 from .Prediction.prediction import PredictionList
@@ -8,7 +8,8 @@ from .helpers.helpers import update_loser_field, get_fight_style_with_best_win_p
 from .helpers.scraping import scrape_raw_fighter_details
 from .FighterImage.fighter_image import upload_image
 from rest_framework_simplejwt import views as jwt_views
-
+from .helpers.stripe import webhook
+from .Odds.odds import insert_odds_for_next_fight_event_in_db
 
 urlpatterns = [
     # path('api', OrganisationApiView.as_view()),
@@ -37,9 +38,13 @@ urlpatterns = [
     path('upload_fighter_image', upload_image, name='upload_image'),
     path('get_test_price_id', get_test_price_id, name='get_test_price_id'),
     path('get_test_publishing_id', get_test_publishing_id, name='get_test_publishing_id'),
-    path('purchase/', PurchaseList.as_view(), name='purchase'),    path('events/get_event_details', EventsList.get_event_by_id, name="get_event_by_id"),
+    path('purchase/', PurchaseList.as_view(), name='purchase'),    
+    path('events/get_event_details', EventsList.get_event_by_id, name="get_event_by_id"),
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('user/save_tokens', save_tokens, name='save_tokens'),
     path('get_username_from_email', get_username_from_email, name='get_username_from_email'),
+    path('user/check_access_token', check_access_token, name='check_access_token'),
+    path('stripe/webhook', webhook, name='webhook'),
+    path('odds/insert_odds_for_next_fight_event_in_db', insert_odds_for_next_fight_event_in_db, name='insert_odds_for_next_fight_event_in_db'),
 ]

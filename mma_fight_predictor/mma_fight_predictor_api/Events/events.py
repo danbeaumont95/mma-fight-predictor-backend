@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from rest_framework.views import APIView
-from ..helpers.helpers import return_response, get_soup_from_url, compare_fractions, get_fighters_fighting_style, get_fighters_record_again_each_opponents_fight_style, find_max, get_fighters_fighting_stance, get_all_fights_in_event, get_basic_fight_stats_from_event, get_fighters_wins_if_in_top_10
+from ..helpers.helpers import return_response, get_soup_from_url, compare_fractions, get_fighters_fighting_style, get_fighters_record_again_each_opponents_fight_style, find_max, get_fighters_fighting_stance, get_all_fights_in_event, get_basic_fight_stats_from_event, get_fighters_wins_if_in_top_10, get_upcoming_events
 from rest_framework import status
 from rest_framework.decorators import api_view
 import pandas as pd
@@ -19,13 +19,7 @@ load_dotenv()
 
 class EventsList(APIView):
   def get(self, request):
-    url = 'http://ufcstats.com/statistics/events/upcoming?page=all'
-    soup = get_soup_from_url(url)
-
-    event_name = soup.find_all('a', {'class': 'b-link b-link_style_black'})
-
-    events = ({'name': item.get_text(strip=True), 'link': item.get("href")} for item in event_name)
-    
+    events = get_upcoming_events()
     # dan dont need below
     # get_fighters_wins_if_in_top_10('conor mcgregor')
 

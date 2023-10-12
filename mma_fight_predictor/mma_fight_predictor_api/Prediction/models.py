@@ -44,3 +44,5 @@ class Prediction(models.Model):
   count_winner = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='count_winner', null=True) # Prediction winner (fighter that get most prediction scores)
   overall_winner = models.ForeignKey(Fighter, on_delete=models.DO_NOTHING, related_name='overall_winner', null=True) # Think this is duplicate of fight winner
   did_prediction_winner_win = models.BooleanField(null=True)
+  red_fighter_betting_odds = models.CharField(max_length=20,null=True, default=None)
+  blue_fighter_betting_odds = models.CharField(max_length=20,null=True, default=None)

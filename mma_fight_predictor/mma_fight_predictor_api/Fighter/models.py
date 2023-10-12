@@ -22,3 +22,6 @@ class Fighter(models.Model):
   
   def __str__(self) -> str:
     return super().__str__()
+  
+  def get_full_name(self):
+    return f"{self.first_name} {self.last_name}"
