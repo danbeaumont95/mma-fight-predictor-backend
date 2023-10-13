@@ -14,7 +14,6 @@ from django.db.models import F, Func
 from .constants import WEIGHT_CLASSES, PREDICTION_LOOKUP, FIGHT_MATRIX_DATE_LOOKUP, WEIGHT_CLASS_LOOKUP, FIGHT_MATRIX_WEIGHT_CLASS_LOOKUP, FIGHT_WEIGHT_CLASS_LOOKUP_TO_WEIGHT
 from pandas_schema import Column, Schema
 from ..Fighter.models import Fighter
-# from ..User.models import User
 from ..Fights.models import Fight
 from datetime import datetime
 from django.db.models import F, Q
@@ -35,6 +34,7 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from ..Tokens.models import Token
 from django.contrib.auth.models import User
+from ..UserGroups.models import UserGroups
 
 def convert_snake_to_camel(string: str) -> str:
     string = re.sub(r'(?<=[a-z0-9])(?=[A-Z0-9])|[^a-zA-Z0-9]',

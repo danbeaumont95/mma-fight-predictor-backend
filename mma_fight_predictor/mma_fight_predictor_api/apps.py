@@ -4,7 +4,7 @@ import sys
 class MmaFightPredictorApiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     # name = 'mma_fight_predictor.mma_fight_predictor_api'
-    if 'makemigrations' not in sys.argv and 'migrate' not in sys.argv:
+    if 'makemigrations' not in sys.argv and 'migrate' not in sys.argv and 'showmigrations' not in sys.argv:
       name = 'mma_fight_predictor.mma_fight_predictor_api'
     else:
       name =  'mma_fight_predictor_api'

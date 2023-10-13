@@ -22,7 +22,7 @@ from django.urls import path
 #   from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls # PROD
 # else:
 #   from mma_fight_predictor_api import urls as mma_fight_predictor_urls
-if 'makemigrations' in sys.argv or 'migrate' in sys.argv:
+if 'makemigrations' in sys.argv or 'migrate' in sys.argv or 'showmigrations' in sys.argv:
   from mma_fight_predictor_api import urls as mma_fight_predictor_urls
 else:
   from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls

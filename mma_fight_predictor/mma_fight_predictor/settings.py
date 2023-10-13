@@ -51,13 +51,13 @@ INSTALLED_APPS = [
     'django_extensions',
     'corsheaders'
 ]
-if 'makemigrations' not in sys.argv and 'migrate' not in sys.argv:
+if 'makemigrations' not in sys.argv and 'migrate' not in sys.argv and 'showmigrations' not in sys.argv:
   INSTALLED_APPS.append('mma_fight_predictor.mma_fight_predictor_api')
 # if os.environ.get('ENV') == "PROD":
 #   INSTALLED_APPS.append('mma_fight_predictor.mma_fight_predictor_api')
 # else:
 #   INSTALLED_APPS.append('mma_fight_predictor_api')
-if 'makemigrations' in sys.argv or 'migrate' in sys.argv:
+if 'makemigrations' in sys.argv or 'migrate' in sys.argv or 'showmigrations' in sys.argv:
   INSTALLED_APPS.append('mma_fight_predictor_api')
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -88,7 +88,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # else:
 #   ROOT_URLCONF = 'mma_fight_predictor.urls'
 ROOT_URLCONF = 'mma_fight_predictor.mma_fight_predictor.urls'
-if 'makemigrations' in sys.argv or 'migrate' in sys.argv:
+if 'makemigrations' in sys.argv or 'migrate' in sys.argv or 'showmigrations' in sys.argv:
   ROOT_URLCONF =  'mma_fight_predictor.urls'
 
 TEMPLATES = [
