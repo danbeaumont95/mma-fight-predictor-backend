@@ -31,11 +31,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'age']
     
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='user_groups',
-        blank=True,
-    )
     user_permissions = models.ManyToManyField(
         'auth.Permission',
         related_name='user_permissions',

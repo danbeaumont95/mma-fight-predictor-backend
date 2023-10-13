@@ -34,8 +34,6 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from ..Tokens.models import Token
 from django.contrib.auth.models import User
-from ..UserGroups.models import UserGroups
-from ..User_Groups.models import User_Groups
 
 def convert_snake_to_camel(string: str) -> str:
     string = re.sub(r'(?<=[a-z0-9])(?=[A-Z0-9])|[^a-zA-Z0-9]',

@@ -1,8 +1,8 @@
 from django.db import models
 
 class Fighter(models.Model):
-  first_name = models.CharField(max_length=40, blank=True)
-  last_name = models.CharField(max_length=40, blank=True, null=True)
+  first_name = models.CharField(max_length=50, blank=True)
+  last_name = models.CharField(max_length=50, blank=True, null=True)
   gender = models.CharField(max_length=6, blank=True)
   style = models.CharField(max_length=30, blank=True, null=True)
   record = models.CharField(max_length=30, blank=True)
