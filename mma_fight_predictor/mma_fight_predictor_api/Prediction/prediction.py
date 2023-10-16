@@ -109,11 +109,13 @@ class PredictionList(APIView):
           first_name = ' '.join(name_parts[:-1])
           last_name = name_parts[-1]
           winner_fighter = Fighter.objects.filter(first_name__iexact=first_name, last_name__iexact=last_name).first()
+        print(winner_fighter, 'winner_fighter1')
         db_fighter = Prediction.objects.filter(Q(blue_fighter=winner_fighter) | Q(red_fighter=winner_fighter), fight_date=date).first()
-        prediction_winner = db_fighter.count_winner
-        was_predicion_correct = prediction_winner == winner_fighter
-        db_fighter.did_prediction_winner_win = was_predicion_correct
-        db_fighter.fight_winner = winner_fighter
-        db_fighter.save()
+        if db_fighter is not None:
+          prediction_winner = db_fighter.count_winner
+          was_predicion_correct = prediction_winner == winner_fighter
+          db_fighter.did_prediction_winner_win = was_predicion_correct
+          db_fighter.fight_winner = winner_fighter
+          db_fighter.save()
  
     return return_response({}, 'Success! Fight event winners saved', status.HTTP_200_OK)    
