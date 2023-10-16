@@ -76,21 +76,22 @@ def insert_odds_for_next_fight_event_in_db(request):
     
     # This only works for names that have 1 first and 1 last
     for item in found:
-      red_first = item[0].split()[0]
-      red_last = item[0].split()[1]
-      red_last = red_last.replace(":", "")
-      
-      red_fighter = Fighter.objects.filter(
-        Q(first_name__iexact=red_first) &
-        Q(last_name__iexact=red_last)
-      ).first()
-      if red_fighter is not None:
-        red_odds = item[0].split(':')[1].strip()
-        blue_odds = item[1].split(':')[1].strip()
-        prediction = Prediction.objects.filter(fight_date=next_event_date, red_fighter=red_fighter).first()
-        prediction.red_fighter_betting_odds = red_odds
-        prediction.blue_fighter_betting_odds = blue_odds
-        prediction.save()
+      if item is not None:
+        red_first = item[0].split()[0]
+        red_last = item[0].split()[1]
+        red_last = red_last.replace(":", "")
+        
+        red_fighter = Fighter.objects.filter(
+          Q(first_name__iexact=red_first) &
+          Q(last_name__iexact=red_last)
+        ).first()
+        if red_fighter is not None:
+          red_odds = item[0].split(':')[1].strip()
+          blue_odds = item[1].split(':')[1].strip()
+          prediction = Prediction.objects.filter(fight_date=next_event_date, red_fighter=red_fighter).first()
+          prediction.red_fighter_betting_odds = red_odds
+          prediction.blue_fighter_betting_odds = blue_odds
+          prediction.save()
         
   return return_response({}, 'Success! Odds for next fight added', status.HTTP_200_OK)      
             

@@ -1387,46 +1387,50 @@ def recursive_lowercase(obj):
       
 # This only works for names longer than 1      
 def get_fighters_odds(odds_data, fighter_one, fighter_two, main):
-  fighter_odds = {fighter_one: [], fighter_two: []}
-  fighter_counts = {fighter_one: 0, fighter_two: 0}
-  if main == 'red':
-    bookmakers_odds = odds_data[fighter_one]['bookmakers']
-  else:
-
-    if fighter_two in odds_data:
-      bookmakers_odds = odds_data[fighter_two]['bookmakers']
+  try:
+    fighter_odds = {fighter_one: [], fighter_two: []}
+    fighter_counts = {fighter_one: 0, fighter_two: 0}
+    if main == 'red':
+      bookmakers_odds = odds_data[fighter_one]['bookmakers']
     else:
-      fighter_two_first = fighter_two.split()[0]
-      for item in name_lookups[fighter_two_first]:
-        odds_key = next(iter(odds_data)) 
-        if odds_key.split()[0] == item:
-          name = f'{item} {fighter_two.split()[1]}'
-          bookmakers_odds = odds_data[name]['bookmakers']
-  bookmakers_odds_lowercase = recursive_lowercase(bookmakers_odds)
-  
-  # Loop through the bookmakers' odds and extract odds for each fighter
-  for bookmaker in bookmakers_odds_lowercase:
-      for market in bookmaker['markets']:
-          for outcome in market['outcomes']:
-              fighter_name = outcome['name']
-              if fighter_name not in fighter_odds:
-                first_name = fighter_name.split()[0]
-                last_name = fighter_name.split()[1]
-                if first_name in name_lookups:
-                  for name in name_lookups[first_name]:
-                    if f'{name} {last_name}' in fighter_odds:
-                      fighter_name = f'{name} {last_name}'
-              fighter_price = outcome['price']
-              if fighter_name in fighter_odds:
-                fighter_odds[fighter_name].append(fighter_price)
-                fighter_counts[fighter_name] += 1
 
-  average_odds = {}
-  for fighter_name, odds_list in fighter_odds.items():
-      total_odds = sum(odds_list)
-      average_odds[fighter_name] = total_odds / fighter_counts[fighter_name]
+      if fighter_two in odds_data:
+        bookmakers_odds = odds_data[fighter_two]['bookmakers']
+      else:
+        fighter_two_first = fighter_two.split()[0]
+        for item in name_lookups[fighter_two_first]:
+          odds_key = next(iter(odds_data)) 
+          if odds_key.split()[0] == item:
+            name = f'{item} {fighter_two.split()[1]}'
+            bookmakers_odds = odds_data[name]['bookmakers']
+    bookmakers_odds_lowercase = recursive_lowercase(bookmakers_odds)
+    
+    # Loop through the bookmakers' odds and extract odds for each fighter
+    for bookmaker in bookmakers_odds_lowercase:
+        for market in bookmaker['markets']:
+            for outcome in market['outcomes']:
+                fighter_name = outcome['name']
+                if fighter_name not in fighter_odds:
+                  first_name = fighter_name.split()[0]
+                  last_name = fighter_name.split()[1]
+                  if first_name in name_lookups:
+                    for name in name_lookups[first_name]:
+                      if f'{name} {last_name}' in fighter_odds:
+                        fighter_name = f'{name} {last_name}'
+                fighter_price = outcome['price']
+                if fighter_name in fighter_odds:
+                  fighter_odds[fighter_name].append(fighter_price)
+                  fighter_counts[fighter_name] += 1
 
-  arr = []
-  for fighter_name, average_odd in average_odds.items():
-      arr.append(f'{fighter_name}: {average_odd:.2f}')
-  return arr
+    average_odds = {}
+    for fighter_name, odds_list in fighter_odds.items():
+        total_odds = sum(odds_list)
+        average_odds[fighter_name] = total_odds / fighter_counts[fighter_name]
+
+    arr = []
+    for fighter_name, average_odd in average_odds.items():
+        arr.append(f'{fighter_name}: {average_odd:.2f}')
+    return arr
+
+  except Exception as e:
+    print(e, f'error getting fighter odds for {fighter_one} and {fighter_two}')
