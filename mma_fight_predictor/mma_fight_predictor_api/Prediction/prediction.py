@@ -109,9 +109,11 @@ class PredictionList(APIView):
           first_name = ' '.join(name_parts[:-1])
           last_name = name_parts[-1]
           winner_fighter = Fighter.objects.filter(first_name__iexact=first_name, last_name__iexact=last_name).first()
-        print(winner_fighter, 'winner_fighter1')
+        print(winner_fighter, f'{winner_fighter.first_name} {winner_fighter.last_name}  : winner_fighter1 on date {date}')
         db_fighter = Prediction.objects.filter(Q(blue_fighter=winner_fighter) | Q(red_fighter=winner_fighter), fight_date=date).first()
+        print(db_fighter, 'db_fighter11')
         if db_fighter is not None:
+          print('not none')
           prediction_winner = db_fighter.count_winner
           was_predicion_correct = prediction_winner == winner_fighter
           db_fighter.did_prediction_winner_win = was_predicion_correct
