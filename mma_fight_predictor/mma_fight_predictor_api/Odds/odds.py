@@ -23,7 +23,7 @@ def insert_odds_for_next_fight_event_in_db(request):
     }
   )
   if sports_response.status_code != 200:
-    print('invalid responds')
+    print('invalid response')
   else:
     res = sports_response.json()
     file_path = 'res.json'
