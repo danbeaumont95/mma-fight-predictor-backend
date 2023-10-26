@@ -8,22 +8,18 @@ import copy
 from io import StringIO
 import csv
 import re
-from pandas_schema.validation import CustomElementValidation
 from ..helpers.lookups import name_lookups
-from django.db.models import F, Func
 from .constants import WEIGHT_CLASSES, PREDICTION_LOOKUP, FIGHT_MATRIX_DATE_LOOKUP, WEIGHT_CLASS_LOOKUP, FIGHT_MATRIX_WEIGHT_CLASS_LOOKUP, FIGHT_WEIGHT_CLASS_LOOKUP_TO_WEIGHT
 from pandas_schema import Column, Schema
 from ..Fighter.models import Fighter
 from ..Fights.models import Fight
 from datetime import datetime
-from django.db.models import F, Q
+from django.db.models import Q
 import json
 from rest_framework.decorators import api_view
 from rest_framework import status
 from django.db.models import F, Count
 import re
-from django.db.models import Count, Case, When, FloatField, OuterRef,Value, CharField
-from django.db.models.functions import Coalesce, Lower, Trim, Substr, Concat
 from django.db import connection
 from ..Prediction.models import Prediction
 from datetime import datetime
@@ -98,7 +94,6 @@ def get_fighters_fighting_style(name):
     if fighting_style_div == None:
       return None
     style = fighting_style_div.find_next_sibling('div').get_text()
-    best_fight_style = get_fight_style_with_best_win_percentage()
     try:
       Fighter.objects.filter(first_name=first_name.lower(), last_name=last_name.lower()).update(style=style)
     except Exception as e:
@@ -148,15 +143,13 @@ def get_fighter_1_opponent_list_from_db(fighter_name):
     arr.append(f'{item.winner} {item.loser}')
   return arr
   
-def get_fighters_record_again_each_opponents_fight_style(fighter_name,url):
+def get_fighters_record_again_each_opponents_fight_style_using_url(fighter_name,url):
   fighter_1_fights_table_soup = get_soup_from_url(url)
   fighter_1_table = fighter_1_fights_table_soup.find('table')
   fighter_1_dfs = pd.read_html(str(fighter_1_table))
   fighter_1_df = fighter_1_dfs[0]
   fighter_1_df = fighter_1_df.dropna()
   fighter_1_df.to_csv('filename.csv', index=False)
-  fighter_1_opponent_list = get_fighter_1_opponent_list_from_db(fighter_name)
-  fighter_1_opponent_list_without_fighter_1 = [name.replace(fighter_name.title(), "").strip() for name in fighter_1_opponent_list]
   opponents_fighting_style = []
   opponents = []
   result_against_opponents = {}
@@ -184,6 +177,53 @@ def get_fighters_record_again_each_opponents_fight_style(fighter_name,url):
 
       opponents_fighting_style.append({'opponent': opponent, 'style': 'unable to find', 'result': result, 'stance': opponent_fighting_stance})
     
+  fighter_1_opponent_styles = {d['style'] for d in opponents_fighting_style if 'style' in d}
+  fighter_1_opponent_stance = {d['stance'] for d in opponents_fighting_style if 'stance' in d}
+
+  fighter_1_record_agains_each_opponent_style = {style: [d['result'] for d in opponents_fighting_style if d.get('style') == style] for style in fighter_1_opponent_styles}
+  fighter_1_record_agains_each_opponent_stance = {stance: [d['result'] for d in opponents_fighting_style if d.get('stance') == stance] for stance in fighter_1_opponent_stance}
+  return {'record': fighter_1_record_agains_each_opponent_style, 'opponents': opponents, 'result_against_opponents': result_against_opponents, 'fighter_1_record_agains_each_opponent_stance': fighter_1_record_agains_each_opponent_stance}
+
+def get_fighters_record_again_each_opponents_fight_style_using_db(fighter_name):
+  fighter_name_arr = [char.lower() for char in fighter_name if char.strip()]
+  all_fighter_fights = Fight.objects.filter(Q(red_fighter__first_name=fighter_name.split()[0].lower(), red_fighter__last_name=fighter_name.split()[-1].lower()) | Q(blue_fighter__first_name=fighter_name.split()[0].lower(), blue_fighter__last_name=fighter_name.split()[-1].lower()))
+  opponents_fighting_style = []
+  opponents = []
+  result_against_opponents = {}
+  for item in all_fighter_fights:
+    red_fighter = item.red_fighter
+    red_fighter_name = red_fighter.first_name + red_fighter.last_name
+    red_fighter_name_arr = [char for char in red_fighter_name]
+    blue_fighter = item.blue_fighter
+    blue_fighter_name = blue_fighter.first_name + blue_fighter.last_name
+    blue_fighter_name_arr = [char for char in blue_fighter_name]
+    if red_fighter_name_arr == fighter_name_arr:
+      opponent = blue_fighter.first_name + ' ' + blue_fighter.last_name
+    elif blue_fighter_name_arr == fighter_name_arr:
+      opponent = red_fighter.first_name + ' ' + red_fighter.last_name
+    else:
+      opponent = None
+    opponents.append(opponent)
+    if opponent not in result_against_opponents:
+      result_against_opponents[opponent.lower()] = []
+    # result = 'win'/'loss'
+    fight_winner = item.winner
+    fight_winner_arr = [char.lower() for char in fight_winner if char.strip()]
+    winner_is_opponent = fight_winner_arr == opponent
+    winner_is_passed_fighter = fight_winner_arr == fighter_name_arr
+    
+    if winner_is_passed_fighter == True:
+      result = 'win'
+    else:
+      result = 'loss'
+    result_against_opponents[opponent.lower()].append(result)
+    opponent_fighting_stance = get_fighters_fighting_stance(opponent)
+    try:
+      opponent_fighting_style = get_fighters_fighting_style(opponent)
+      opponents_fighting_style.append({'opponent': opponent, 'style': opponent_fighting_style, 'result': result, 'stance': opponent_fighting_stance})
+    except:
+
+      opponents_fighting_style.append({'opponent': opponent, 'style': 'unable to find', 'result': result, 'stance': opponent_fighting_stance})
   fighter_1_opponent_styles = {d['style'] for d in opponents_fighting_style if 'style' in d}
   fighter_1_opponent_stance = {d['stance'] for d in opponents_fighting_style if 'stance' in d}
 
@@ -235,23 +275,14 @@ def read_fighters_file(file):
 
     reader = csv.reader(copy_of_csv, delimiter=',')
 
-
-
-
-
-
     if isinstance(file, pd.DataFrame):
 
         new_headers = []
 
         for header in file_to_read.columns:
-
             stripped = header.replace('"', '')
-
             new_key = stripped.rstrip("\r").split(",")
-
             key = new_key[0]
-
             header = key
             new_headers.append(header)
 
@@ -279,7 +310,6 @@ def read_fighters_file(file):
 
     column_dict = dict()
     for index, value in enumerate(columns):
-
         stripped = value.replace('"', '')
         new_val = stripped.rstrip("\r").split(",")
         val = new_val[0]
@@ -287,14 +317,12 @@ def read_fighters_file(file):
         column_dict[convert_snake_to_camel(val)] = val
 
     missing_required_columns = []
-
     too_many_column_errors = []
 
     if 'fighter_name' not in columns:
         missing_required_columns.append('fighter_name')
 
     amount_of_users_to_upload = len(buffered_users)
-
     schema_list = []
 
     if isinstance(file, pd.DataFrame):
@@ -321,12 +349,8 @@ def read_fighters_file(file):
 
     data_to_iterate = iteration
 
-    empty_users = 0
-
     for column, row_data in data_to_iterate.iterrows():
-
         try:
-
             row_id = row_id + 1
 
             fighter_name = row_data.get(column_dict['fighter_name'])
@@ -515,94 +539,52 @@ def read_fight_file(file):
   iteration = iteration.rename(columns={'r_sig_str.': 'r_sig_str', 'b_sig_str.': 'b_sig_str', 'r_total_str.': 'r_total_str', 'b_total_str.': 'b_total_str'})
   data_to_iterate = iteration
 
-  empty_users = 0
   for column, row_data in data_to_iterate.iterrows():
 
       try:
-
           row_id = row_id + 1
-
           r_fighter = row_data['r_fighter']
           r_fighter = r_fighter.lower()
-
           b_fighter = row_data['b_fighter']
           b_fighter = b_fighter.lower()
-
           r_kd = row_data['r_kd']
-
           b_kd = row_data['b_kd']
-
           r_sig_str = row_data['r_sig_str']
-
           b_sig_str = row_data['b_sig_str']
-
           r_sig_str_pct = row_data['r_sig_str_pct']
-
           b_sig_str_pct = row_data['b_sig_str_pct']
-
           r_total_str = row_data['r_total_str']
-
           b_total_str = row_data['b_total_str']
-
           r_td = row_data['r_td']
-
           b_td = row_data['b_td']
-
           r_td_pct = row_data['r_td_pct']
-
           b_td_pct = row_data['b_td_pct']
-
           r_sub_att = row_data['r_sub_att']
-
           b_sub_att = row_data['b_sub_att']
-
           r_rev = row_data['r_rev']
-
           b_rev = row_data['b_rev']
-
           r_ctrl = row_data['r_ctrl']
-
           b_ctrl = row_data['b_ctrl']
-
           r_head = row_data['r_head']
-
           b_head = row_data['b_head']
-
           r_body = row_data['r_body']
-
           b_body = row_data['b_body'] 
-
           r_leg = row_data['r_leg']
-
           b_leg = row_data['b_leg']
-
           r_distance = row_data['r_distance']
-
           b_distance = row_data['b_distance']
-
           r_clinch = row_data['r_clinch']
-
           b_clinch = row_data['b_clinch']
-
           r_ground = row_data['r_ground']
-
           b_ground = row_data['b_ground']
-
           win_by = row_data['win_by']
-
           last_round = row_data['last_round']
-
           last_round_time = row_data['last_round_time']
-
           format = row_data['format']
-
           referee = row_data['referee']
-
           date = row_data['date']
           date = datetime.strptime(date, '%B %d, %Y').date()
-
           location = row_data['location']
-
           fight_type = row_data['fight_type']
 
           winner = row_data['winner']
@@ -1434,3 +1416,4 @@ def get_fighters_odds(odds_data, fighter_one, fighter_two, main):
 
   except Exception as e:
     print(e, f'error getting fighter odds for {fighter_one} and {fighter_two}')
+    # To-Do setup better error logging to notfy me of failed odds insert

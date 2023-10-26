@@ -1,29 +1,19 @@
 W/L,Fighter,Kd,Str,Td,Sub,Event,Method,Round,Time
-win,Bobby Green  Tony Ferguson,0  0,137  54,0  0,1  0,"UFC 291: Poirier vs. Gaethje 2  Jul. 29, 2023",SUB  Arm Triangle,3.0,4:54
-nc,Bobby Green  Jared Gordon,0  0,23  17,0  0,0  0,"UFC Fight Night: Pavlovich vs. Blaydes  Apr. 22, 2023",CNC,1.0,4:35
-loss,Bobby Green  Drew Dober,0  1,73  34,0  0,0  0,"UFC Fight Night: Cannonier vs. Strickland  Dec. 17, 2022",KO/TKO  Punch,2.0,2:45
-loss,Bobby Green  Islam Makhachev,0  0,9  14,0  1,0  0,"UFC Fight Night: Makhachev vs. Green  Feb. 26, 2022",KO/TKO  Punches,1.0,3:23
-win,Bobby Green  Nasrat Haqparast,0  0,188  76,0  0,0  0,"UFC 271: Adesanya vs. Whittaker 2  Feb. 12, 2022",U-DEC,3.0,5:00
-win,Bobby Green  Al Iaquinta,1  0,28  10,0  0,0  0,"UFC 268: Usman vs. Covington 2  Nov. 06, 2021",KO/TKO  Punches,1.0,2:25
-loss,Bobby Green  Rafael Fiziev,0  0,143  104,0  0,0  0,"UFC 265: Lewis vs. Gane  Aug. 07, 2021",U-DEC,3.0,5:00
-loss,Bobby Green  Thiago Moises,0  0,85  42,2  2,0  1,"UFC Fight Night: Hall vs. Silva  Oct. 31, 2020",U-DEC,3.0,5:00
-win,Bobby Green  Alan Patrick,0  0,61  19,4  1,0  0,"UFC Fight Night: Waterson vs. Hill  Sep. 12, 2020",U-DEC,3.0,5:00
-win,Bobby Green  Lando Vannata,1  0,115  54,3  1,0  0,"UFC Fight Night: Brunson vs. Shahbazyan  Aug. 01, 2020",U-DEC,3.0,5:00
-win,Bobby Green  Clay Guida,0  0,85  23,2  3,2  0,"UFC Fight Night: Blaydes vs. Volkov  Jun. 20, 2020",U-DEC,3.0,5:00
-loss,Bobby Green  Francisco Trinaldo,0  0,50  31,2  1,0  1,"UFC Fight Night: Blachowicz vs. Jacare  Nov. 16, 2019",U-DEC,3.0,5:00
-loss,Bobby Green  Drakkar Klose,0  0,92  58,1  0,1  0,"UFC Fight Night: Lee vs. Iaquinta  Dec. 15, 2018",U-DEC,3.0,5:00
-win,Bobby Green  Erik Koch,0  0,110  56,1  1,0  0,"UFC Fight Night: Jacare vs. Brunson 2  Jan. 27, 2018",U-DEC,3.0,5:00
-draw,Bobby Green  Lando Vannata,0  1,93  104,1  4,0  1,"UFC 216: Ferguson vs. Lee  Oct. 07, 2017",S-DEC,3.0,5:00
-loss,Bobby Green  Rashid Magomedov,0  0,75  75,0  0,0  0,"UFC on FOX: Johnson vs. Reis  Apr. 15, 2017",S-DEC,3.0,5:00
-loss,Bobby Green  Dustin Poirier,0  2,16  36,0  0,0  0,"UFC 199: Rockhold vs. Bisping 2  Jun. 04, 2016",KO/TKO  Punch,1.0,2:53
-loss,Bobby Green  Edson Barboza,0  0,50  54,0  0,0  0,"UFC Fight Night: Edgar vs Swanson  Nov. 22, 2014",U-DEC,3.0,5:00
-win,Bobby Green  Josh Thomson,0  0,59  45,0  0,0  0,"UFC on FOX: Lawler vs Brown  Jul. 26, 2014",S-DEC,3.0,5:00
-win,Bobby Green  Pat Healy,0  0,80  59,3  2,0  0,"UFC on FOX: Johnson vs. Benavidez 2  Dec. 14, 2013",U-DEC,3.0,5:00
-win,Bobby Green  James Krause,1  0,20  22,0  0,0  0,"UFC Fight Night: Fight for the Troops 3  Nov. 06, 2013",KO/TKO  Kick,1.0,3:50
-win,Bobby Green  Jacob Volkmann,0  0,54  6,1  4,1  0,"UFC 156: Aldo vs Edgar  Feb. 02, 2013",SUB  Rear Naked Choke,3.0,4:25
-win,Bobby Green  Matt Ricehouse,1  0,77  48,2  0,0  0,"Strikeforce - Rousey vs Kaufman  Aug. 18, 2012",U-DEC,3.0,5:00
-win,Bobby Green  James Terry,--  --,--  --,--  --,--  --,"Strikeforce - Barnett vs Cormier  May. 19, 2012",S-DEC,3.0,5:00
-win,Bobby Green  James Reese,--  --,--  --,--  --,--  --,"Strikeforce Challengers 20  Nov. 18, 2011",SUB  Rear Naked Choke,3.0,2:25
-win,Bobby Green  Charon Spain,--  --,--  --,--  --,--  --,"Strikeforce Challengers 19  Sep. 23, 2011",SUB  Arm Triangle,2.0,2:54
-loss,Bobby Green  Gesias Cavalcante,--  --,--  --,--  --,--  --,"Strikeforce - Fedor vs. Henderson  Jul. 30, 2011",S-DEC,3.0,5:00
-loss,Bobby Green  Dan Lauzon,0  0,21  2,1  0,1  5,"Affliction - Day of Reckoning  Jan. 24, 2009",SUB  Rear Naked Choke,1.0,4:55
+loss,Kamaru Usman  Khamzat Chimaev,0  0,36  38,0  4,0  1,"UFC 294: Makhachev vs. Volkanovski 2  Oct. 21, 2023",M-DEC,3.0,5:00
+loss,Kamaru Usman  Leon Edwards,0  0,87  120,4  0,0  0,"UFC 286: Edwards vs. Usman 3  Mar. 18, 2023",M-DEC,5.0,5:00
+loss,Kamaru Usman  Leon Edwards,0  1,83  55,5  1,0  1,"UFC 278: Usman vs. Edwards  Aug. 20, 2022",KO/TKO  Kick,5.0,4:04
+win,Kamaru Usman  Colby Covington,2  0,123  107,1  0,0  0,"UFC 268: Usman vs. Covington 2  Nov. 06, 2021",U-DEC,5.0,5:00
+win,Kamaru Usman  Jorge Masvidal,1  0,21  31,2  0,0  0,"UFC 261: Usman vs. Masvidal 2  Apr. 24, 2021",KO/TKO  Punch,2.0,1:02
+win,Kamaru Usman  Gilbert Burns,2  0,83  45,0  0,0  0,"UFC 258: Usman vs. Burns  Feb. 13, 2021",KO/TKO  Punches,3.0,0:34
+win,Kamaru Usman  Jorge Masvidal,0  0,94  66,5  0,0  0,"UFC 251: Usman vs. Masvidal  Jul. 11, 2020",U-DEC,5.0,5:00
+win,Kamaru Usman  Colby Covington,2  0,175  143,0  0,0  0,"UFC 245: Usman vs. Covington  Dec. 14, 2019",KO/TKO  Punch,5.0,4:10
+win,Kamaru Usman  Tyron Woodley,0  0,141  34,2  0,0  0,"UFC 235: Jones vs. Smith  Mar. 02, 2019",U-DEC,5.0,5:00
+win,Kamaru Usman  Rafael Dos Anjos,0  0,130  62,12  0,0  2,"The Ultimate Fighter: Heavy Hitters Finale  Nov. 30, 2018",U-DEC,5.0,5:00
+win,Kamaru Usman  Demian Maia,1  0,66  27,0  0,0  0,"UFC Fight Night: Maia vs. Usman  May. 19, 2018",U-DEC,5.0,5:00
+win,Kamaru Usman  Emil Meek,0  0,50  30,8  0,0  2,"UFC Fight Night: Stephens vs. Choi  Jan. 14, 2018",U-DEC,3.0,5:00
+win,Kamaru Usman  Sergio Moraes,1  0,16  13,0  0,0  0,"UFC Fight Night: Rockhold vs. Branch  Sep. 16, 2017",KO/TKO  Punch,1.0,2:48
+win,Kamaru Usman  Sean Strickland,1  0,90  27,2  0,0  0,"UFC 210: Cormier vs. Johnson 2  Apr. 08, 2017",U-DEC,3.0,5:00
+win,Kamaru Usman  Warlley Alves,0  0,71  25,1  0,1  1,"UFC Fight Night: Bader vs. Nogueira  Nov. 19, 2016",U-DEC,3.0,5:00
+win,Kamaru Usman  Alexander Yakovlev,0  0,41  8,5  0,0  0,"UFC on FOX: Holm vs. Shevchenko  Jul. 23, 2016",U-DEC,3.0,5:00
+win,Kamaru Usman  Leon Edwards,0  0,48  26,6  0,0  0,"UFC on FOX: Dos Anjos vs. Cowboy 2  Dec. 19, 2015",U-DEC,3.0,5:00
+win,Kamaru Usman  Hayder Hassan,0  0,15  3,6  0,1  0,"The Ultimate Fighter: American Top Team vs. Blackzilians Finale  Jul. 12, 2015",SUB  Arm Triangle,2.0,1:19
