@@ -81,16 +81,25 @@ class Command(BaseCommand):
 
         self._report_heuristic()
 
-        # Save the gradient-boosted model + metadata.
+        # Keep whichever model gives the better (lower) hold-out log loss.
+        candidates = {"logistic_regression": logreg, "gradient_boosting": gbm}
+        best_name = min(candidates, key=lambda k: self._logloss(candidates[k], X_test, y_test))
+        best = candidates[best_name]
+
         os.makedirs(MODEL_DIR, exist_ok=True)
         path = os.path.normpath(os.path.join(MODEL_DIR, "win_model.joblib"))
         joblib.dump(
-            {"model": gbm, "features": feat_cols, "trained_at": datetime.now().isoformat(),
-             "cutoff": str(cutoff), "n_train": len(train), "n_test": len(test)},
+            {"model": best, "model_name": best_name, "features": feat_cols,
+             "trained_at": datetime.now().isoformat(), "cutoff": str(cutoff),
+             "n_train": len(train), "n_test": len(test)},
             path,
         )
-        self.stdout.write(self.style.SUCCESS(f"\nSaved gradient-boosted model -> {path}"))
-        self.stdout.write(self._top_features(gbm, X_test, y_test, feat_cols))
+        self.stdout.write(self.style.SUCCESS(f"\nSaved best model ({best_name}) -> {path}"))
+        self.stdout.write(self._top_features(best, X_test, y_test, feat_cols))
+
+    def _logloss(self, model, X_test, y_test):
+        p = np.clip(model.predict_proba(X_test)[:, 1], 1e-6, 1 - 1e-6)
+        return log_loss(y_test, p, labels=[0, 1])
 
     # --- reporting helpers -------------------------------------------------
     def _header(self):
