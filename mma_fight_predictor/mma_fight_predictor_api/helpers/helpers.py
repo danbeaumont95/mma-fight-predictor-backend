@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 import requests
+import hashlib
 from bs4 import BeautifulSoup
 import pandas as pd
 from collections import defaultdict
@@ -19,6 +20,8 @@ import json
 from rest_framework.decorators import api_view
 from rest_framework import status
 from django.db.models import F, Count
+from django.db.models import Value, CharField
+from django.db.models.functions import Concat, Lower, Trim, Coalesce
 import re
 from django.db import connection
 from ..Prediction.models import Prediction
@@ -40,13 +43,74 @@ def convert_snake_to_camel(string: str) -> str:
 def return_response(data, message, status):
     return Response({'data': data, 'message': message, 'status': status})
 
+# ufcstats.com gates non-browser clients behind a JavaScript proof-of-work
+# challenge: the stub page hands out a nonce and asks for an `n` such that
+# sha256("<nonce>:<n>") starts with a number of hex zeros, then expects that
+# answer POSTed to /__c, which sets a clearance cookie. We solve it once and
+# reuse the cookie for the rest of the session via a module-level Session.
+_SCRAPE_SESSION = requests.Session()
+_SCRAPE_SESSION.headers.update({
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+                  'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+})
+
+
+def _solve_pow_challenge(html, base_url='http://ufcstats.com'):
+    """If `html` is the ufcstats PoW gate, solve it and POST the answer.
+
+    Returns True if a challenge was found and solved (cookie now set on the
+    session), False otherwise.
+    """
+    nonce_match = re.search(r'nonce="([0-9a-fA-F]+)"', html)
+    zeros_match = re.search(r"new Array\((\d+)\+1\)\.join", html)
+    if not (nonce_match and zeros_match):
+        return False
+    nonce = nonce_match.group(1)
+    target = '0' * int(zeros_match.group(1))
+    n = 0
+    while not hashlib.sha256(f'{nonce}:{n}'.encode()).hexdigest().startswith(target):
+        n += 1
+    _SCRAPE_SESSION.post(
+        f'{base_url}/__c',
+        data={'nonce': nonce, 'n': n},
+        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+        timeout=30,
+    )
+    return True
+
+
 def get_soup_from_url(url):
-    headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-    response = requests.get(url, headers=headers)
-    html_content = response.content
-    soup = BeautifulSoup(html_content, "html.parser")
+    response = _SCRAPE_SESSION.get(url, timeout=30)
+    # Only the gate page references /__c; on a normal page this is a no-op.
+    if '/__c' in response.text and _solve_pow_challenge(response.text):
+        response = _SCRAPE_SESSION.get(url, timeout=30)
+    soup = BeautifulSoup(response.content, "html.parser")
     return soup
+
+
+def normalized_full_name_expr():
+    """A queryset annotation expression that yields the lowercased, trimmed
+    'first_name last_name' for a Fighter, so names can be matched/grouped
+    regardless of how they were split across the two columns."""
+    return Lower(Trim(Concat(
+        'first_name', Value(' '), Coalesce('last_name', Value('')),
+        output_field=CharField(),
+    )))
+
+
+def find_fighter_by_full_name(full_name):
+    """Resolve a Fighter from a full display name (e.g. 'Christian Leroy
+    Duncan') regardless of how the name is split across first_name/last_name.
+    Handles 1-, 2- and 3-word names. Returns a single Fighter or None."""
+    if not full_name:
+        return None
+    normalized = ' '.join(full_name.lower().split())
+    return (
+        Fighter.objects
+        .annotate(_full_name=normalized_full_name_expr())
+        .filter(_full_name=normalized)
+        .first()
+    )
 
 def compare_fractions(fraction1, fraction2):
     # Convert the fractions to a common denominator
