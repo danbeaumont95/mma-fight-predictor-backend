@@ -22,10 +22,10 @@ from django.urls import path
 #   from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls # PROD
 # else:
 #   from mma_fight_predictor_api import urls as mma_fight_predictor_urls
-if 'makemigrations' in sys.argv or 'migrate' in sys.argv or 'showmigrations' in sys.argv:
-  from mma_fight_predictor_api import urls as mma_fight_predictor_urls
+if os.environ.get('ENV') == "PROD":
+  from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls  # PROD
 else:
-  from mma_fight_predictor.mma_fight_predictor_api import urls as mma_fight_predictor_urls
+  from mma_fight_predictor_api import urls as mma_fight_predictor_urls
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [

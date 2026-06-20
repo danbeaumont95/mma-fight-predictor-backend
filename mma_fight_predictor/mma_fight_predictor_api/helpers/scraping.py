@@ -1,4 +1,4 @@
-from .helpers import get_soup_from_url, return_response
+from .helpers import get_soup_from_url, return_response, find_fighter_by_full_name
 from ..Fighter.models import Fighter
 from ..Fights.models import Fight
 import re
@@ -18,7 +18,7 @@ def get_text_after_colon(input_string):
 def get_text(td):
   return td.text.strip().lower()
 
-def scrape_raw_fighter_details():
+def scrape_raw_fighter_details(update_existing=False):
     lowercase_letters = list("abcdefghijklmnopqrstuvwxyz")
     bar = Bar('Processing', max=26)
 
@@ -31,6 +31,7 @@ def scrape_raw_fighter_details():
             tds = fighter.find_all('td')
             first_name = ""
             last_name = ""
+            fighter_link = ""
             nickname = ""
             height = ""
             weight = ""
@@ -101,8 +102,8 @@ def scrape_raw_fighter_details():
                 print(f"New fighter created: {fighter_obj.first_name} {fighter_obj.last_name}")
             else:
                 print(f"Fighter already exists: {fighter_obj.first_name} {fighter_obj.last_name}")
-            if created:
-              if 'fighter_link' in locals():
+            if created or update_existing:
+              if fighter_link:
 
                 if len(fighter_link) > 0:
                     fighter_soup = get_soup_from_url(fighter_link)
@@ -144,6 +145,13 @@ def scrape_raw_fighter_details():
                     fighter_to_update.td_def = td_def
                     fighter_to_update.sub_avg = sub_avg
                     fighter_to_update.dob = dob
+                    if update_existing and not created:
+                        # refresh row-level fields that change over a career
+                        fighter_to_update.record = record
+                        fighter_to_update.height = height
+                        fighter_to_update.weight = weight
+                        fighter_to_update.reach = reach
+                        fighter_to_update.stance = stance
                     fighter_to_update.save()
         bar.next()
 
@@ -158,7 +166,7 @@ def extract_text(tag):
         return tag.get_text().strip()
       
       
-def scrape_raw_fight_details():
+def scrape_raw_fight_details(skip_recent=2):
   print('raw fight scraper')
   exception_arrs = []
   url = f"http://ufcstats.com/statistics/events/completed?page=all"
@@ -167,7 +175,7 @@ def scrape_raw_fight_details():
 
   all_events = soup.select('.b-statistics__table-row')
   for event in all_events:
-    if skipped_events < 2:
+    if skipped_events < skip_recent:
         skipped_events += 1
         continue
 
@@ -185,7 +193,7 @@ def scrape_raw_fight_details():
       date = input_date.strftime(output_format_str)
     else:
       print('no date tag')
-      break
+      continue
     if a_tag:
       href_value = a_tag['href']
       href_soup = get_soup_from_url(href_value)
@@ -198,40 +206,27 @@ def scrape_raw_fight_details():
         blue_fighter_name = blue_fighter_tag.find('a', class_='b-link_style_black').text.strip()
 
         blue_fighter_full_name = blue_fighter_name.lower().split()
-        blue_fighter_first_name = blue_fighter_full_name[0]
-        blue_fighter_last_name = " ".join(blue_fighter_full_name[1:])
-        # try:
-          
-        blue_fighter = Fighter.objects.filter(first_name=blue_fighter_first_name, last_name=blue_fighter_last_name)
-        if len(blue_fighter) == 0:
-          
-      # except Fighter.DoesNotExist:
+        blue_fighter = find_fighter_by_full_name(blue_fighter_name)
+        if blue_fighter is None:
           print(f'{blue_fighter_full_name} does not exist')
-          
-          blue_first = ' '.join(blue_fighter_full_name[:-1])
-          blue_last = blue_fighter_full_name[-1]
-          blue_fighter = Fighter.objects.filter(first_name=blue_first, last_name=blue_last)
-        blue_fighter_exists = blue_fighter.exists()
-        if blue_fighter_exists == True:
-          fight_already_exists = Fight.objects.filter(blue_fighter=blue_fighter.first(), date=date).exists()
+        else:
+          fight_already_exists = Fight.objects.filter(blue_fighter=blue_fighter, date=date).exists()
           if fight_already_exists == True:
             print(f'Fight already exists in database {blue_fighter_full_name}, {datetime.now()}')
-            break
+            continue
         red_fighter_tags = fight.find_all('a', class_='b-link_style_black')
         red_fighter_name = red_fighter_tags[1].text.strip()
         red_fighter_full_name = red_fighter_name.lower().split()
-        red_fighter_first_name = red_fighter_full_name[0]
-        red_fighter_last_name = " ".join(red_fighter_full_name[1:])
-        # try:
-        red_fighter = Fighter.objects.filter(first_name=red_fighter_first_name, last_name=red_fighter_last_name)
-        if len(red_fighter) == 0:
-          
+        red_fighter = find_fighter_by_full_name(red_fighter_name)
+        if red_fighter is None:
           print(f'{red_fighter_name} does not exist')
-          red_first = ' '.join(red_fighter_full_name[:-1])
-          red_last = red_fighter_full_name[-1]
-          red_fighter = Fighter.objects.filter(first_name=red_first, last_name=red_last)
-          
-        # single_fight_href = 
+
+        # Skip the fight if either fighter is unmatched rather than writing a
+        # row with a null fighter.
+        if blue_fighter is None or red_fighter is None:
+          continue
+
+        # single_fight_href =
         anchor_tag = fight.find('a', class_='b-flag_style_green')
         link = None
         # Check if the <a> tag is found and get the value of "href" attribute
@@ -416,11 +411,11 @@ def scrape_raw_fight_details():
             
             try:
               first = {
-                'dan': blue_fighter.first()
+                'dan': blue_fighter
               }
               dict1 = {
-                'blue_fighter': blue_fighter.first(), 
-                'red_fighter':red_fighter.first(), 
+                'blue_fighter': blue_fighter, 
+                'red_fighter':red_fighter, 
                 'b_kd':b_kd,
                 'r_kd':r_kd, 
                 'b_sig_str': b_sig_str,
@@ -461,7 +456,7 @@ def scrape_raw_fight_details():
                 'loser': loser
               }
               
-              Fight.objects.create(blue_fighter=blue_fighter.first(), red_fighter=red_fighter.first(), b_kd=b_kd, r_kd=r_kd, b_sig_str=b_sig_str, r_sig_str=r_sig_str, b_sig_str_pct=b_sig_str_pct, r_sig_str_pct=r_sig_str_pct, b_total_str=b_total_str, r_total_str=r_total_str, b_td=b_td, r_td=r_td, b_td_pct=b_td_pct, r_td_pct=r_td_pct, b_sub_att=b_sub_att, r_sub_att=r_sub_att, b_rev=b_rev, r_rev=r_rev, b_ctrl=b_ctrl, r_ctrl=r_ctrl, b_head=b_head, r_head=r_head, b_body=b_body, r_body=r_body, b_leg=b_leg, r_leg=r_leg, b_distance=b_distance, r_distance=r_distance, b_clinch=b_clinch, r_clinch=r_clinch, b_ground=b_ground, r_ground=r_ground, win_by=win_by, last_round=round, last_round_time=time, referee=referee, date=date, location=location, fight_type=weight, winner=winner, loser=loser, format=time_format)
+              Fight.objects.create(blue_fighter=blue_fighter, red_fighter=red_fighter, b_kd=b_kd, r_kd=r_kd, b_sig_str=b_sig_str, r_sig_str=r_sig_str, b_sig_str_pct=b_sig_str_pct, r_sig_str_pct=r_sig_str_pct, b_total_str=b_total_str, r_total_str=r_total_str, b_td=b_td, r_td=r_td, b_td_pct=b_td_pct, r_td_pct=r_td_pct, b_sub_att=b_sub_att, r_sub_att=r_sub_att, b_rev=b_rev, r_rev=r_rev, b_ctrl=b_ctrl, r_ctrl=r_ctrl, b_head=b_head, r_head=r_head, b_body=b_body, r_body=r_body, b_leg=b_leg, r_leg=r_leg, b_distance=b_distance, r_distance=r_distance, b_clinch=b_clinch, r_clinch=r_clinch, b_ground=b_ground, r_ground=r_ground, win_by=win_by, last_round=round, last_round_time=time, referee=referee, date=date, location=location, fight_type=weight, winner=winner, loser=loser, format=time_format)
             except Exception as e:
               exception_arrs.append({'error': e, 'fight': f'{blue_fighter_full_name} - {red_fighter_full_name}'})
               print(e, f'Error creating fight between {blue_fighter_full_name} - {red_fighter_full_name}')
