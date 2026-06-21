@@ -10,6 +10,7 @@ from .FighterImage.fighter_image import upload_image
 from rest_framework_simplejwt import views as jwt_views
 from .helpers.stripe import webhook
 from .Odds.odds import insert_odds_for_next_fight_event_in_db
+from .ml.api import predict_fight as ml_predict_fight
 
 urlpatterns = [
     # path('api', OrganisationApiView.as_view()),
@@ -47,4 +48,5 @@ urlpatterns = [
     path('user/check_access_token', check_access_token, name='check_access_token'),
     path('stripe/webhook', webhook, name='webhook'),
     path('odds/insert_odds_for_next_fight_event_in_db', insert_odds_for_next_fight_event_in_db, name='insert_odds_for_next_fight_event_in_db'),
+    path('predict_fight', ml_predict_fight, name='predict_fight'),
 ]

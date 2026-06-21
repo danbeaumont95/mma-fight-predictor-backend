@@ -68,12 +68,24 @@ class Command(BaseCommand):
                 "page, so it is much slower."
             ),
         )
+        parser.add_argument(
+            "--recent",
+            type=int,
+            default=None,
+            metavar="N",
+            help=(
+                "Only scan the newest N completed events when scraping fights, "
+                "instead of the whole history. Use after a card for a fast "
+                "incremental update, e.g. --fights-only --recent 2."
+            ),
+        )
 
     def handle(self, *args, **options):
         fighters_only = options["fighters_only"]
         fights_only = options["fights_only"]
         skip_recent = options["skip_recent"]
         update_existing = options["update_existing"]
+        recent = options["recent"]
 
         if fighters_only and fights_only:
             self.stderr.write(
@@ -108,13 +120,14 @@ class Command(BaseCommand):
 
         if do_fights:
             before = Fight.objects.count()
+            scope = f"newest {recent} events" if recent is not None else "all history"
             self.stdout.write(
                 self.style.WARNING(
-                    f"Scraping fights (skip_recent={skip_recent})... starting from "
-                    f"{before} in DB. Errors are also written to errors-4.txt."
+                    f"Scraping fights ({scope}, skip_recent={skip_recent})... starting "
+                    f"from {before} in DB. Errors are also written to errors-4.txt."
                 )
             )
-            scrape_raw_fight_details(skip_recent=skip_recent)
+            scrape_raw_fight_details(skip_recent=skip_recent, max_events=recent)
             after = Fight.objects.count()
             self.stdout.write(
                 self.style.SUCCESS(

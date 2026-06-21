@@ -166,12 +166,13 @@ def extract_text(tag):
         return tag.get_text().strip()
       
       
-def scrape_raw_fight_details(skip_recent=2):
+def scrape_raw_fight_details(skip_recent=2, max_events=None):
   print('raw fight scraper')
   exception_arrs = []
   url = f"http://ufcstats.com/statistics/events/completed?page=all"
   soup = get_soup_from_url(url)
   skipped_events = 0
+  processed_events = 0
 
   all_events = soup.select('.b-statistics__table-row')
   for event in all_events:
@@ -195,6 +196,11 @@ def scrape_raw_fight_details(skip_recent=2):
       print('no date tag')
       continue
     if a_tag:
+      # For incremental updates, stop after the newest `max_events` events
+      # instead of crawling the entire history.
+      if max_events is not None and processed_events >= max_events:
+        break
+      processed_events += 1
       href_value = a_tag['href']
       href_soup = get_soup_from_url(href_value)
       location_element = href_soup.find("i", text=re.compile(r"\s*Location\s*:\s*", re.IGNORECASE))

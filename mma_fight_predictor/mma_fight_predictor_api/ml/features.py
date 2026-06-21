@@ -13,7 +13,7 @@ A and B, the label is "did A win", and features are A-minus-B differences --
 symmetric and balanced.
 """
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, date
 
 import pandas as pd
 
@@ -207,3 +207,33 @@ def _diff(x, y):
     if x is None or y is None:
         return None
     return x - y
+
+
+def compute_current_accumulators():
+    """Stream the whole fight history and return each fighter's FINAL career
+    accumulator (used to build features for an upcoming, not-yet-fought bout)."""
+    acc = defaultdict(_new_acc)
+    fights = (
+        Fight.objects.exclude(winner__isnull=True)
+        .exclude(winner__exact="")
+        .exclude(date__isnull=True)
+        .select_related("blue_fighter", "red_fighter")
+        .order_by("date", "id")
+    )
+    for f in fights.iterator():
+        winner, loser = _resolve_winner(f)
+        if winner is None:
+            continue
+        _update(acc[winner.id], f, is_blue=(winner.id == f.blue_fighter_id), won=True, fight_date=f.date)
+        _update(acc[loser.id], f, is_blue=(loser.id == f.blue_fighter_id), won=False, fight_date=f.date)
+    return acc
+
+
+def matchup_difference_features(fighter_a, fighter_b, acc, as_of=None):
+    """A-minus-B difference feature vector (in FEATURE_KEYS order) for a
+    hypothetical bout as of `as_of` (defaults to today). Missing values are
+    returned as None -> the model pipeline imputes them."""
+    as_of = as_of or date.today()
+    fa = _snapshot(acc[fighter_a.id], fighter_a, as_of)
+    fb = _snapshot(acc[fighter_b.id], fighter_b, as_of)
+    return [_diff(fa[k], fb[k]) for k in FEATURE_KEYS]
