@@ -52,9 +52,12 @@ def predict_matchup(name_a, name_b, bundle=None, acc=None, as_of=None):
 
     return {
         "fighter_a": fa.get_full_name(),
+        "fighter_a_id": fa.id,
         "fighter_b": fb.get_full_name(),
+        "fighter_b_id": fb.id,
         "prob_a": round(prob_a, 4),
         "prob_b": round(1.0 - prob_a, 4),
         "favorite": fa.get_full_name() if prob_a >= 0.5 else fb.get_full_name(),
         "model": bundle.get("model_name"),
+        "model_trained_at": bundle.get("trained_at"),
     }

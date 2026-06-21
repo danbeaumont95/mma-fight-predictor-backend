@@ -96,6 +96,33 @@ python manage.py predict_fight "Manel Kape" "Kyoji Horiguchi"
 Returns each fighter's win probability and the model's pick. Names are matched
 accent/format-tolerantly; unknown fighters raise a clear error.
 
+### `score_predictions` — score saved predictions vs results
+
+```bash
+python manage.py score_predictions          # score newly-resolved predictions
+python manage.py score_predictions --all     # re-score everything
+```
+
+Matches each saved `ModelPrediction` to its real fight, records the actual
+winner + whether the pick was correct, and prints overall accuracy plus a
+calibration table (does "70%" really win ~70% of the time?). Run it after
+`backfill_data --fights-only --recent 2` so the results are in the DB.
+
+### HTTP endpoint — `POST /mma_fight_predictor/predict_fight`
+
+```bash
+python manage.py runserver
+curl -X POST http://localhost:8000/mma_fight_predictor/predict_fight \
+  -H "Content-Type: application/json" \
+  -d '{"fighter_a":"Manel Kape","fighter_b":"Kyoji Horiguchi"}'
+```
+
+Returns win probabilities for the matchup (model + accumulators are cached and
+auto-refresh after a data update). Add `"save": true` (and optionally
+`"event_date": "YYYY-MM-DD"`) to log the prediction to `ModelPrediction` for
+later scoring; it returns a `prediction_id`. Casual lookups without `save` are
+not persisted.
+
 ---
 
 ## 4. Per-card predict → score workflow
